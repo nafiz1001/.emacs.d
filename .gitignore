@@ -49,5 +49,4 @@ flycheck_*.el
 
 eln-cache
 transient
-/init.el
 /projectile-bookmarks.eld
