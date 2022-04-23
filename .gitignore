@@ -50,3 +50,6 @@ flycheck_*.el
 eln-cache
 transient
 /projectile-bookmarks.eld
+/straight/
+/.dap-breakpoints
+/.lsp-session-v1

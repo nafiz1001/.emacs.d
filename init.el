@@ -21,22 +21,23 @@
 
 ;;; Package System Setup
 
-(require 'package)
+(setq package-enable-at-startup nil)
+(setq straight-use-package-by-default t)
 
-(setq package-archives
-      '(("melpa" . "https://melpa.org/packages/")
-	("org" . "https://orgmode.org/elpa/")
-	("elpa" . "https://elpa.gnu.org/packages/")))
+(defvar bootstrap-version)
+(let ((bootstrap-file
+       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+      (bootstrap-version 5))
+  (unless (file-exists-p bootstrap-file)
+    (with-current-buffer
+        (url-retrieve-synchronously
+         "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
+         'silent 'inhibit-cookies)
+      (goto-char (point-max))
+      (eval-print-last-sexp)))
+  (load bootstrap-file nil 'nomessage))
 
-(package-initialize)
-(unless package-archive-contents
-  (package-refresh-contents))
-
-(unless (package-installed-p 'use-package)
-  (package-install 'use-package))
-
-(require 'use-package)
-(setq use-package-always-ensure t)
+(straight-use-package 'use-package)
 
 ;;; Visual Packages
 
@@ -82,7 +83,11 @@
   :after evil
   :bind ("C-/" . evilnc-comment-or-uncomment-lines))
 
-(use-package magit)
+(use-package magit :commands magit-status)
+
+(use-package git-gutter
+  :config
+  (global-git-gutter-mode +1))
 
 ;; install libtool and libtool-bin
 (use-package vterm
@@ -120,15 +125,32 @@
 	      ("s-p" . projectile-command-map)
 	      ("C-c p" . projectile-command-map)))
 
+;;; flycheck
+
+(use-package flycheck
+  :init (global-flycheck-mode))
+
 ;;; LSP and DAP
 
 (use-package lsp-mode
   :after company
   :hook
   (lsp-mode . company-mode)
+  (c-mode . lsp-deferred)
+  (c++-mode . lsp-deferred)
   :init
   (setq lsp-keymap-prefix "C-c l")
   :commands (lsp lsp-deferred))
+
+(use-package lsp-ivy
+  :commands lsp-ivy-workspace-symbol)
+
+(use-package lsp-ui
+  :after lsp-mode
+  :hook (lsp-mode . lsp-ui-mode)
+  :custom
+  (setq lsp-ui-doc-position 'bottom)
+  :commands lsp-ui-mode)
 
 (use-package dap-mode)
 
@@ -140,7 +162,9 @@
   (setq TeX-auto-save t)
   (setq TeX-parse-self t))
 
-;;; Merlin (OCaml)
+;;; OCaml
+
+(use-package tuareg)
 
 (let ((opam-share
        (ignore-errors (car (process-lines "opam" "var" "share")))))
