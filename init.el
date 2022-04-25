@@ -103,56 +103,26 @@
   (vterm "/bin/bash")
   (rename-buffer buffer-name t))
 
-;; nice text completion when typing
-(use-package company
-  :hook
-  (after-init . global-company-mode)
-  :custom
-  (company-minimum-prefix-length 1)
-  (company-idle-delay 0.0))
+(use-package consult)
 
-;; nice search minibuffer
-(use-package ivy
+(use-package vertico
+  :after consult
   :config
-  (ivy-mode 1))
+  (vertico-mode)
+  (setq completion-in-region-function
+      (lambda (&rest args)
+        (apply (if vertico-mode
+                   #'consult-completion-in-region
+                 #'completion--in-region)
+               args))))
 
-;; project interaction (search files, compile, etc.)
-(use-package projectile
-  :ensure t
-  :init
-  (projectile-mode +1)
-  :bind (:map projectile-mode-map
-	      ("s-p" . projectile-command-map)
-	      ("C-c p" . projectile-command-map)))
+;; (use-package corfu
+;;   :custom
+;;   (corfu-auto t)
+;;   :config
+;;   (global-corfu-mode))
 
-;;; flycheck
-
-(use-package flycheck
-  :init (global-flycheck-mode))
-
-;;; LSP and DAP
-
-(use-package lsp-mode
-  :after company
-  :hook
-  (lsp-mode . company-mode)
-  (c-mode . lsp-deferred)
-  (c++-mode . lsp-deferred)
-  :init
-  (setq lsp-keymap-prefix "C-c l")
-  :commands (lsp lsp-deferred))
-
-(use-package lsp-ivy
-  :commands lsp-ivy-workspace-symbol)
-
-(use-package lsp-ui
-  :after lsp-mode
-  :hook (lsp-mode . lsp-ui-mode)
-  :custom
-  (setq lsp-ui-doc-position 'bottom)
-  :commands lsp-ui-mode)
-
-(use-package dap-mode)
+(use-package eglot)
 
 ;;; AUCTeX
 
@@ -173,6 +143,4 @@
 		 (expand-file-name "emacs/site-lisp" opam-share))
     (autoload 'merlin-mode "merlin" nil t nil)
     (add-hook 'tuareg-mode-hook 'merlin-mode t)
-    (add-hook 'caml-mode-hook 'merlin-mode t)
-    (with-eval-after-load 'company
-      (add-to-list 'company-backends 'merlin-company-backend))))
+    (add-hook 'caml-mode-hook 'merlin-mode t)))
