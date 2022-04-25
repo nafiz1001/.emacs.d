@@ -15,6 +15,10 @@
 
 (setq native-comp-async-report-warnings-errors nil)
 
+(setq ido-enable-flex-matching t)
+(setq ido-everywhere t)
+(ido-mode 1)
+
 ;; improve LSP performance
 (setq gc-cons-threshold (* 1024 1024))
 (setq read-process-output-max (* 1024 1024))
@@ -103,24 +107,11 @@
   (vterm "/bin/bash")
   (rename-buffer buffer-name t))
 
-(use-package consult)
-
-(use-package vertico
-  :after consult
+(use-package corfu
+  :custom
+  (corfu-auto t)
   :config
-  (vertico-mode)
-  (setq completion-in-region-function
-      (lambda (&rest args)
-        (apply (if vertico-mode
-                   #'consult-completion-in-region
-                 #'completion--in-region)
-               args))))
-
-;; (use-package corfu
-;;   :custom
-;;   (corfu-auto t)
-;;   :config
-;;   (global-corfu-mode))
+  (global-corfu-mode))
 
 (use-package eglot)
 
