@@ -123,6 +123,10 @@
 
 (use-package eglot)
 
+;;; Rust
+
+(use-package rustic)
+
 ;;; AUCTeX
 
 (use-package auctex
