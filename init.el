@@ -41,9 +41,9 @@
       (bootstrap-version 5))
   (unless (file-exists-p bootstrap-file)
     (with-current-buffer
-        (url-retrieve-synchronously
-         "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
-         'silent 'inhibit-cookies)
+	(url-retrieve-synchronously
+	 "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
+	 'silent 'inhibit-cookies)
       (goto-char (point-max))
       (eval-print-last-sexp)))
   (load bootstrap-file nil 'nomessage))
@@ -59,15 +59,15 @@
 (set-face-attribute 'default nil :font "DejaVu Sans Mono-16")
 ;; https://emacs.stackexchange.com/a/1062
 (let ((faces '(mode-line
-		mode-line-buffer-id
-		mode-line-emphasis
-		mode-line-highlight
-		mode-line-inactive)))
-(mapc
-    (lambda
-    (face)
-    (set-face-attribute face nil :font "DejaVu Sans Mono-10"))
-    faces))
+	       mode-line-buffer-id
+	       mode-line-emphasis
+	       mode-line-highlight
+	       mode-line-inactive)))
+  (mapc
+   (lambda
+     (face)
+     (set-face-attribute face nil :font "DejaVu Sans Mono-10"))
+   faces))
 
 (use-package nyan-mode
   :config (nyan-mode 1))
