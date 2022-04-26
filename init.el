@@ -3,6 +3,17 @@
 (setq inhibit-startup-message t)
 (setq visible-bell t)
 
+(scroll-bar-mode -1)
+(tool-bar-mode -1)
+(tooltip-mode -1)
+(set-fringe-mode 10)
+(menu-bar-mode -1)
+
+(setq mouse-wheel-scroll-amount '(1 ((shift) . 1)))
+(setq mouse-wheel-progressive-speed nil)
+(setq mouse-wheel-follow-mouse 't)
+(setq scroll-step 1)
+
 (column-number-mode)
 (global-display-line-numbers-mode t)
 
