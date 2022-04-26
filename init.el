@@ -26,10 +26,6 @@
 
 (setq native-comp-async-report-warnings-errors nil)
 
-(setq ido-enable-flex-matching t)
-(setq ido-everywhere t)
-(ido-mode 1)
-
 ;; improve LSP performance
 (setq gc-cons-threshold (* 1024 1024))
 (setq read-process-output-max (* 1024 1024))
@@ -118,11 +114,12 @@
   (vterm "/bin/bash")
   (rename-buffer buffer-name t))
 
-(use-package corfu
-  :custom
-  (corfu-auto t)
-  :config
-  (global-corfu-mode))
+
+(use-package company-mode
+  :hook (after-init . global-company-mode))
+
+(use-package counsel
+  :config (ivy-mode 1))
 
 (use-package eglot)
 
