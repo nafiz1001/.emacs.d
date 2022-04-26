@@ -48,21 +48,19 @@
 (use-package rainbow-delimiters
   :hook (prog-mode . rainbow-delimiters-mode))
 
-(use-package doom-themes
-  :init (load-theme 'doom-acario-dark t)
-  :config
-  (set-face-attribute 'default nil :font "DejaVu Sans Mono-16")
-  ;; https://emacs.stackexchange.com/a/1062
-  (let ((faces '(mode-line
-		 mode-line-buffer-id
-		 mode-line-emphasis
-		 mode-line-highlight
-		 mode-line-inactive)))
-    (mapc
-     (lambda
-       (face)
-       (set-face-attribute face nil :font "DejaVu Sans Mono-10"))
-     faces)))
+(load-theme 'modus-vivendi t)
+(set-face-attribute 'default nil :font "DejaVu Sans Mono-16")
+;; https://emacs.stackexchange.com/a/1062
+(let ((faces '(mode-line
+		mode-line-buffer-id
+		mode-line-emphasis
+		mode-line-highlight
+		mode-line-inactive)))
+(mapc
+    (lambda
+    (face)
+    (set-face-attribute face nil :font "DejaVu Sans Mono-10"))
+    faces))
 
 (use-package nyan-mode
   :config (nyan-mode 1))
