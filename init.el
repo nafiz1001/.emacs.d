@@ -147,7 +147,7 @@
 
 ;;; OCaml
 
-(use-package tuareg)
+(use-package tuareg :commands tuareg-mode)
 
 (let ((opam-share
        (ignore-errors (car (process-lines "opam" "var" "share")))))
