@@ -121,7 +121,17 @@
 (use-package counsel
   :config (ivy-mode 1))
 
-(use-package eglot)
+(use-package lsp-mode
+  :init (setq lsp-keymap-prefix "C-c l")
+  :commands lsp)
+
+(use-package lsp-ui
+  :after lsp-mode
+  :commands lsp-ui-mode
+  :custom
+  (setq lsp-ui-doc-position 'bottom)
+  (setq lsp-ui-doc-show-with-cursor nil)
+  (setq lsp-ui-doc-show-with-mouse t))
 
 ;;; Rust
 
