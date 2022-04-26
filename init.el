@@ -84,7 +84,9 @@
   (setq evil-want-keybinding nil)
   :config
   (evil-mode 1)
-  (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state))
+  (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
+  ;; Make ESC quit prompts
+  (global-set-key (kbd "<escape>") 'keyboard-escape-quit))
 
 (use-package evil-collection
   :after evil
