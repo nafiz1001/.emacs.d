@@ -122,6 +122,10 @@
 (use-package counsel
   :config (ivy-mode 1))
 
+(use-package projectile
+  :config
+  (projectile-mode +1))
+
 (use-package lsp-mode
   :init (setq lsp-keymap-prefix "C-c l")
   :commands lsp)
