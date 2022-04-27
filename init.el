@@ -130,7 +130,6 @@
   :after lsp-mode
   :commands lsp-ui-mode
   :custom
-  (setq lsp-ui-doc-position 'bottom)
   (setq lsp-ui-doc-show-with-cursor nil)
   (setq lsp-ui-doc-show-with-mouse t))
 
