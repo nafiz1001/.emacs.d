@@ -30,6 +30,20 @@
 (setq gc-cons-threshold (* 1024 1024))
 (setq read-process-output-max (* 1024 1024))
 
+(load-theme 'modus-vivendi t)
+(set-face-attribute 'default nil :font "DejaVu Sans Mono-16")
+;; https://emacs.stackexchange.com/a/1062
+(let ((faces '(mode-line
+	       mode-line-buffer-id
+	       mode-line-emphasis
+	       mode-line-highlight
+	       mode-line-inactive)))
+  (mapc
+   (lambda
+     (face)
+     (set-face-attribute face nil :font "DejaVu Sans Mono-10"))
+   faces))
+
 ;;; Package System Setup
 
 (setq package-enable-at-startup nil)
@@ -54,20 +68,6 @@
 
 (use-package rainbow-delimiters
   :hook (prog-mode . rainbow-delimiters-mode))
-
-(load-theme 'modus-vivendi t)
-(set-face-attribute 'default nil :font "DejaVu Sans Mono-16")
-;; https://emacs.stackexchange.com/a/1062
-(let ((faces '(mode-line
-	       mode-line-buffer-id
-	       mode-line-emphasis
-	       mode-line-highlight
-	       mode-line-inactive)))
-  (mapc
-   (lambda
-     (face)
-     (set-face-attribute face nil :font "DejaVu Sans Mono-10"))
-   faces))
 
 (use-package nyan-mode
   :config (nyan-mode 1))
