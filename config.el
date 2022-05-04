@@ -75,6 +75,9 @@
 ;; You can also try 'gd' (or 'C-c c d') to jump to their definition and see how
 ;; they are implemented.
 
+(global-auto-revert-mode 1)
+(setq global-auto-revert-mode t)
+
 (use-package! tree-sitter
   :config
   (require 'tree-sitter-langs)
