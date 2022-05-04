@@ -87,4 +87,4 @@
         modus-themes-bold-constructs nil
         modus-themes-region '(bg-only no-extend))
   :config
-  (load-theme 'modus-vivendi))
+  (load-theme 'modus-vivendi t))
