@@ -78,6 +78,11 @@
 (global-auto-revert-mode 1)
 (setq global-auto-revert-mode t)
 
+(defun new-term (buffer-name)
+  (interactive "sbuffer name: ")
+  (vterm vterm-shell)
+  (rename-buffer buffer-name t))
+
 (use-package! tree-sitter
   :config
   (require 'tree-sitter-langs)
