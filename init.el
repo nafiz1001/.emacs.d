@@ -30,19 +30,29 @@
 (setq gc-cons-threshold (* 1024 1024))
 (setq read-process-output-max (* 1024 1024))
 
-(load-theme 'modus-vivendi t)
-(set-face-attribute 'default nil :font "DejaVu Sans Mono-16")
-;; https://emacs.stackexchange.com/a/1062
-(let ((faces '(mode-line
-	       mode-line-buffer-id
-	       mode-line-emphasis
-	       mode-line-highlight
-	       mode-line-inactive)))
-  (mapc
-   (lambda
-     (face)
-     (set-face-attribute face nil :font "DejaVu Sans Mono-10"))
-   faces))
+(defun my-configure-font ()
+  "Configure font for first frame"
+
+  (set-face-attribute 'default nil :font "DejaVu Sans Mono-16")
+  ;; https://emacs.stackexchange.com/a/1062
+  (let ((faces '(mode-line
+		 mode-line-buffer-id
+		 mode-line-emphasis
+		 mode-line-highlight
+		 mode-line-inactive)))
+    (mapc
+     (lambda
+       (face)
+       (set-face-attribute face nil :font "DejaVu Sans Mono-10"))
+     faces))
+
+  (if (daemonp)
+      (remove-hook 'server-after-make-frame-hook #'my-configure-font)
+    (remove-hook 'window-setup-hook #'my-configure-font)))
+
+(if (daemonp)
+    (add-hook 'server-after-make-frame-hook #'my-configure-font)
+  (add-hook 'window-setup-hook #'my-configure-font))
 
 ;;; Package System Setup
 
@@ -66,6 +76,14 @@
 
 ;;; Visual Packages
 
+(use-package modus-themes
+  :init
+  (setq modus-themes-italic-constructs t
+        modus-themes-bold-constructs nil
+        modus-themes-region '(bg-only no-extend))
+  :config
+  (load-theme 'modus-vivendi t))
+
 (use-package rainbow-delimiters
   :hook (prog-mode . rainbow-delimiters-mode))
 
@@ -74,11 +92,14 @@
 
 ;;; Behavioural Packages
 
+(use-package undo-fu)
+
 (use-package evil
+  :after undo-fu
   :init
   (setq evil-want-integration t)
   (setq evil-want-keybinding nil)
-  (setq evil-undo-system 'undo-redo)
+  (setq evil-undo-system 'undo-fu)
   :config
   (evil-mode 1)
   (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
@@ -110,9 +131,9 @@
   (setq vterm-shell "bash")
   (setq vterm-max-scrollback 1000))
 
-(defun bash (buffer-name)
+(defun new-term (buffer-name)
   (interactive "sbuffer name: ")
-  (vterm "/bin/bash")
+  (vterm vterm-shell)
   (rename-buffer buffer-name t))
 
 
