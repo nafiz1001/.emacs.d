@@ -60,6 +60,8 @@
 (setq show-paren-style 'parenthesis)
 (show-paren-mode +1)
 
+(set-default-coding-systems 'utf-8)
+
 ;;; Package System Setup
 
 (setq package-enable-at-startup nil)
