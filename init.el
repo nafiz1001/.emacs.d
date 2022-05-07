@@ -1,3 +1,5 @@
+;; -*- lexical-binding: t; -*-
+
 ;;; Vanilla Init
 
 (setq inhibit-startup-message t)
