@@ -54,6 +54,10 @@
     (add-hook 'server-after-make-frame-hook #'my-configure-font)
   (add-hook 'window-setup-hook #'my-configure-font))
 
+(require 'paren)
+(setq show-paren-style 'parenthesis)
+(show-paren-mode +1)
+
 ;;; Package System Setup
 
 (setq package-enable-at-startup nil)
