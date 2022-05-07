@@ -146,12 +146,19 @@
   (vterm vterm-shell)
   (rename-buffer buffer-name t))
 
+(use-package consult)
+
+(use-package vertico
+  :init
+  (vertico-mode))
+
+(use-package orderless
+  :custom
+  (completion-styles '(orderless basic))
+  (completion-category-overrides '((file (styles basic partial-completion)))))
 
 (use-package company-mode
   :hook (after-init . global-company-mode))
-
-(use-package counsel
-  :config (ivy-mode 1))
 
 (use-package projectile
   :config
