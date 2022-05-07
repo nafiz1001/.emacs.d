@@ -132,7 +132,6 @@
   :hook
   (vterm-mode . (lambda () (display-line-numbers-mode 0)))
   :config
-  (setq vterm-shell "bash")
   (setq vterm-max-scrollback 1000))
 
 (defun new-term (buffer-name)
