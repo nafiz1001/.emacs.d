@@ -186,6 +186,10 @@
 (use-package company-mode
   :hook (after-init . global-company-mode))
 
+(use-package flycheck
+  :ensure t
+  :init (global-flycheck-mode))
+
 (use-package projectile
   :config
   (projectile-mode +1))
