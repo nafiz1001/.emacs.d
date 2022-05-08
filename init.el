@@ -275,14 +275,19 @@
 
 (use-package lsp-mode
   :init (setq lsp-keymap-prefix "C-c l")
-  :commands lsp)
+  :config
+  (setq lsp-lens-enable nil)
+  (setq lsp-headerline-breadcrumb-enable nil)
+  (setq lsp-signature-render-documentation nil)
+ :commands lsp)
 
 (use-package lsp-ui
   :after lsp-mode
   :commands lsp-ui-mode
   :custom
   (setq lsp-ui-doc-show-with-cursor nil)
-  (setq lsp-ui-doc-show-with-mouse t))
+  (setq lsp-ui-doc-show-with-mouse t)
+  (setq lsp-ui-sideline-enable nil))
 
 ;;; Rust
 
