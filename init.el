@@ -66,6 +66,8 @@
 
 (set-default-coding-systems 'utf-8)
 
+(setq org-agenda-files (file-expand-wildcards "~/org/*.org"))
+
 ;;; Package System Setup
 
 (setq package-enable-at-startup nil)
