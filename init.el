@@ -147,6 +147,14 @@
   (vterm vterm-shell)
   (rename-buffer buffer-name t))
 
+(use-package helpful
+  :commands (helpful-callable helpful-variable helpful-command helpful-key)
+  :bind
+  ([remap describe-function] . helpful-callable)
+  ([remap describe-command] . helpful-command)
+  ([remap describe-variable] . helpful-variable)
+  ([remap describe-key] . helpful-key))
+
 (use-package consult)
 
 (use-package vertico
