@@ -91,8 +91,8 @@
 (use-package modus-themes
   :init
   (setq modus-themes-italic-constructs t
-        modus-themes-bold-constructs nil
-        modus-themes-region '(bg-only no-extend))
+	modus-themes-bold-constructs nil
+	modus-themes-region '(bg-only no-extend))
   :config
   (load-theme 'modus-vivendi t))
 
@@ -156,7 +156,8 @@
 (use-package orderless
   :custom
   (completion-styles '(orderless basic))
-  (completion-category-overrides '((file (styles basic partial-completion)))))
+  (completion-category-overrides
+   '((file (styles basic partial-completion)))))
 
 (use-package company-mode
   :hook (after-init . global-company-mode))
