@@ -177,12 +177,11 @@
    :host github
    :repo "tarsius/hl-todo")
   :config
-  (global-hl-todo-mode)
-  :init
   (define-key hl-todo-mode-map (kbd "C-c p") 'hl-todo-previous)
   (define-key hl-todo-mode-map (kbd "C-c n") 'hl-todo-next)
   (define-key hl-todo-mode-map (kbd "C-c o") 'hl-todo-occur)
-  (define-key hl-todo-mode-map (kbd "C-c i") 'hl-todo-insert))
+  (define-key hl-todo-mode-map (kbd "C-c i") 'hl-todo-insert)
+  (global-hl-todo-mode))
 
 (use-package consult
   :bind (;; C-x bindings (ctl-x-map)
