@@ -18,7 +18,7 @@
 (setq scroll-step 1) ;; keyboard scroll one line at a time
 (setq use-dialog-box nil) ;; Disable dialog boxes since they weren't working in Mac OSX
 (setq vc-follow-symlinks t)
-(setq truncate-lines t)
+(setq-default truncate-lines t)
 
 (column-number-mode)
 (global-display-line-numbers-mode t)
