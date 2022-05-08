@@ -164,6 +164,12 @@
   ([remap describe-variable] . helpful-variable)
   ([remap describe-key] . helpful-key))
 
+(use-package which-key
+  :config
+  (which-key-setup-side-window-bottom)
+  (setq which-key-show-early-on-C-h t)
+  (which-key-mode))
+
 (use-package hl-todo
   :straight
   (hl-todo
