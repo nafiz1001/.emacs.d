@@ -86,6 +86,13 @@
 
 (straight-use-package 'use-package)
 
+(use-package no-littering
+  :straight
+  (no-littering
+   :type git
+   :host github
+   :repo "emacscollective/no-littering"))
+
 ;;; Visual Packages
 
 (use-package modus-themes

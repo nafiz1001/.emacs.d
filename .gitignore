@@ -54,3 +54,4 @@ transient
 /.dap-breakpoints
 /.lsp-session-v1
 /*.last
+/.local/
