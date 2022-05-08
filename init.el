@@ -99,6 +99,8 @@
 (use-package rainbow-delimiters
   :hook (prog-mode . rainbow-delimiters-mode))
 
+(use-package rainbow-mode)
+
 (use-package nyan-mode
   :config (nyan-mode 1))
 
