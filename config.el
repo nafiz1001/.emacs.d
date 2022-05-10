@@ -78,6 +78,9 @@
 (global-auto-revert-mode 1)
 (setq global-auto-revert-mode t)
 
+(after! org
+  (setq org-startup-folded t))
+
 (defun new-term (buffer-name)
   (interactive "sbuffer name: ")
   (vterm vterm-shell)
