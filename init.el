@@ -288,28 +288,3 @@
   (setq lsp-ui-doc-show-with-cursor nil)
   (setq lsp-ui-doc-show-with-mouse t)
   (setq lsp-ui-sideline-enable nil))
-
-;;; Rust
-
-(use-package rustic)
-
-;;; AUCTeX
-
-(use-package auctex
-  :defer t
-  :config
-  (setq TeX-auto-save t)
-  (setq TeX-parse-self t))
-
-;;; OCaml
-
-(use-package tuareg :commands tuareg-mode)
-
-(let ((opam-share
-       (ignore-errors (car (process-lines "opam" "var" "share")))))
-  (when (and opam-share (file-directory-p opam-share))
-    (add-to-list 'load-path
-		 (expand-file-name "emacs/site-lisp" opam-share))
-    (autoload 'merlin-mode "merlin" nil t nil)
-    (add-hook 'tuareg-mode-hook 'merlin-mode t)
-    (add-hook 'caml-mode-hook 'merlin-mode t)))
