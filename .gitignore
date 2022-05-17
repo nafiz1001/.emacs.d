@@ -56,3 +56,4 @@ transient
 /*.last
 /.local/
 /var/
+/etc/
