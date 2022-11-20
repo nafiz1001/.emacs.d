@@ -157,15 +157,25 @@
 (use-package setup
   :straight (setup :type git :host nil :repo "https://git.sr.ht/~pkal/setup"))
 
-(defun my/lazy-install (name)
+(defmacro my/nested-with-eval-after-load (list last)
+  (let ((first (car list)))
+    (if first
+	`(with-eval-after-load ',first ,(macroexpand `(my/nested-with-eval-after-load ,(cdr list) ,last)))
+      last)))
+
+(defmacro my/use-package-lazy (name &rest plist)
   ;; https://github.com/radian-software/straight.el/issues/235#issuecomment-366342968
-  `(progn
-     (defun ,name ()
-       (interactive)
-       (fmakunbound ',name)
-       (straight-use-package ',name)
-       (,name))
-     (straight-use-package-lazy ',name)))
+  (let* ((command (plist-get plist :commands))
+	 (command-body (when command
+			 `(defun ,command ()
+    			    (interactive)
+    			    (fmakunbound ',command)
+    			    (use-package ,name ,@plist)
+    			    (,command))))
+	 (after (plist-get plist :after)))
+    `(progn
+       ,(macroexpand `(my/nested-with-eval-after-load ,after ,command-body))
+       (straight-use-package-lazy ',name))))
 
 (use-package no-littering
   :straight (no-littering :type git :host github :repo "emacscollective/no-littering")
@@ -184,10 +194,9 @@
   :config
   (load-theme 'modus-vivendi t))
 
-(use-package nix-mode
-  :disabled
-  :config
-  (add-to-list 'auto-mode-alist '("\\.nix\\'" . nix-mode)))
+(my/use-package-lazy nix-mode
+  :commands nix-mode
+  :mode "\\.nix\\'")
 
 (use-package rainbow-delimiters :hook prog-mode-hook)
 
