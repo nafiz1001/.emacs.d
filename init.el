@@ -349,19 +349,14 @@
 (use-package smartparens
   :hook prog-mode)
 
-(use-package treemacs
-  :disabled)
-(use-package treemacs-evil
-  :disabled
+(my/use-package-lazy treemacs)
+(my/use-package-lazy treemacs-evil
   :after (treemacs evil))
-(use-package treemacs-projectile
-  :disabled
+(my/use-package-lazy treemacs-projectile
   :after (treemacs projectile))
-(use-package treemacs-magit
-  :disabled
+(my/use-package-lazy treemacs-magit
   :after (treemacs magit))
-(use-package lsp-treemacs
-  :disabled
+(my/use-package-lazy lsp-treemacs
   :after (treemacs lsp-mode))
 
 (use-package tree-sitter
