@@ -157,24 +157,25 @@
 (use-package setup
   :straight (setup :type git :host nil :repo "https://git.sr.ht/~pkal/setup"))
 
-(defmacro my/nested-with-eval-after-load (list last)
+(defmacro my/use-package-lazy--after-handler (list last)
   (let ((first (car list)))
     (if first
-	`(with-eval-after-load ',first ,(macroexpand `(my/nested-with-eval-after-load ,(cdr list) ,last)))
+	`(with-eval-after-load ',first (my/use-package-lazy--after-handler ,(cdr list) ,last))
       last)))
 
 (defmacro my/use-package-lazy (name &rest plist)
   ;; https://github.com/radian-software/straight.el/issues/235#issuecomment-366342968
   (let* ((command (plist-get plist :commands))
-	 (command-body (when command
+	 (command-body (if command
 			 `(defun ,command ()
     			    (interactive)
     			    (fmakunbound ',command)
     			    (use-package ,name ,@plist)
-    			    (,command))))
+    			    (,command))
+			 `(use-package ,name ,@plist)))
 	 (after (plist-get plist :after)))
     `(progn
-       ,(macroexpand `(my/nested-with-eval-after-load ,after ,command-body))
+       (my/use-package-lazy--after-handler ,after ,command-body)
        (straight-use-package-lazy ',name))))
 
 (use-package no-littering
