@@ -157,26 +157,25 @@
 (use-package setup
   :straight (setup :type git :host nil :repo "https://git.sr.ht/~pkal/setup"))
 
-(defmacro my/use-package-lazy--after-handler (list last)
-  (let ((first (car list)))
-    (if first
-	`(with-eval-after-load ',first (my/use-package-lazy--after-handler ,(cdr list) ,last))
-      last)))
-
 (defmacro my/use-package-lazy (name &rest plist)
   ;; https://github.com/radian-software/straight.el/issues/235#issuecomment-366342968
-  (let* ((command (plist-get plist :commands))
-	 (command-body (if command
+  (let* ((commands (plist-get plist :commands))
+	 (commands (if (not (listp commands)) (list commands) commands))
+	 (make-command (lambda (command)
 			 `(defun ,command ()
     			    (interactive)
-    			    (fmakunbound ',command)
+    			    (mapcar #'fmakunbound ',commands)
     			    (use-package ,name ,@plist)
-    			    (,command))
+    			    (,command))))
+	 (command-body (if commands
+			   `(progn ,@(mapcar make-command commands))
 			 `(use-package ,name ,@plist)))
-	 (after (plist-get plist :after)))
+	 (deps (plist-get plist :after))
+	 (eval-after-load-wrapper (lambda (acc elt) `(with-eval-after-load ',elt ,acc))))
     `(progn
-       (my/use-package-lazy--after-handler ,after ,command-body)
-       (straight-use-package-lazy ',name))))
+       (if (straight-use-package-lazy ',name)
+	   (use-package ,name ,@plist)
+	 ,(seq-reduce eval-after-load-wrapper deps command-body)))))
 
 (use-package no-littering
   :straight (no-littering :type git :host github :repo "emacscollective/no-littering")
