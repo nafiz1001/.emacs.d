@@ -162,11 +162,11 @@
   (let* ((commands (plist-get plist :commands))
 	 (commands (if (not (listp commands)) (list commands) commands))
 	 (make-command (lambda (command)
-			 `(defun ,command ()
+			 `(defun ,command (&rest args)
     			    (interactive)
     			    (mapcar #'fmakunbound ',commands)
     			    (use-package ,name ,@plist)
-    			    (,command))))
+    			    (apply ,command args))))
 	 (command-body (if commands
 			   `(progn ,@(mapcar make-command commands))
 			 `(use-package ,name ,@plist)))
