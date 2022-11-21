@@ -194,8 +194,8 @@
   :config
   (load-theme 'modus-vivendi t))
 
-(my/use-package-lazy nix-mode
-  :commands nix-mode
+(use-package nix-mode
+  :disabled
   :mode "\\.nix\\'")
 
 (use-package rainbow-delimiters :hook prog-mode-hook)
@@ -348,15 +348,20 @@
 (use-package smartparens
   :hook prog-mode)
 
-(my/use-package-lazy treemacs)
-(my/use-package-lazy treemacs-evil
-  :after (treemacs evil))
-(my/use-package-lazy treemacs-projectile
-  :after (treemacs projectile))
-(my/use-package-lazy treemacs-magit
-  :after (treemacs magit))
-(my/use-package-lazy lsp-treemacs
-  :after (treemacs lsp-mode))
+(use-package treemacs
+  :disabled)
+(use-package treemacs-evil
+  :after (treemacs evil)
+  :disabled)
+(use-package treemacs-projectile
+  :after (treemacs projectile)
+  :disabled)
+(use-package treemacs-magit
+  :after (treemacs magit)
+  :disabled)
+(use-package lsp-treemacs
+  :after (treemacs lsp-mode)
+  :disabled)
 
 (use-package tree-sitter
   :hook (tree-sitter-after-on . tree-sitter-hl-mode)
@@ -402,7 +407,9 @@
   :init
   (setq inferior-lisp-program (executable-find "sbcl" exec-path)))
 
-(use-package cider :disabled)
+(use-package cider
+  :disabled
+  :commands (cider-jack-in cider-connect cider-connect-cljs))
 
 (use-package tuareg :disabled)
 (use-package merlin :disabled)
