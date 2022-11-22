@@ -5,10 +5,9 @@
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 
 ;; https://stackoverflow.com/a/13983506
-(defun my/nuke-all-other-buffers ()
+(defun my/nuke-other-buffers ()
   (interactive)
-  (let* ((cb (current-buffer))
-	 (other-buffers (seq-filter (lambda (b) (not (equal b cb))) (buffer-list))))
+  (let* ((other-buffers (remove (current-buffer) (buffer-list))))
     (mapcar 'kill-buffer other-buffers)
     (delete-other-windows)))
 
