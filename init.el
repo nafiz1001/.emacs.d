@@ -158,7 +158,8 @@
 
 (defmacro my/use-package-lazy (name &rest plist)
   ;; https://github.com/radian-software/straight.el/issues/235#issuecomment-366342968
-  (let* ((commands (plist-get plist :commands))
+  (let* ((disabled (plist-get plist :disabled))
+	 (commands (plist-get plist :commands))
 	 (commands (if (not (listp commands)) (list commands) commands))
 	 (make-command (lambda (command)
 			 `(defun ,command (&rest args)
@@ -166,7 +167,7 @@
     			    (mapcar #'fmakunbound ',commands)
     			    (use-package ,name ,@plist)
     			    (apply ,command args))))
-	 (command-body (if commands
+	 (command-body (if (and commands (not disabled))
 			   `(progn ,@(mapcar make-command commands))
 			 `(use-package ,name ,@plist)))
 	 (deps (plist-get plist :after))
