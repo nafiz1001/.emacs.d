@@ -156,26 +156,46 @@
 (use-package setup
   :straight (setup :type git :host nil :repo "https://git.sr.ht/~pkal/setup"))
 
-(defmacro my/use-package-lazy (name &rest plist)
-  ;; https://github.com/radian-software/straight.el/issues/235#issuecomment-366342968
-  (let* ((disabled (plist-get plist :disabled))
-	 (commands (plist-get plist :commands))
-	 (commands (if (not (listp commands)) (list commands) commands))
-	 (make-command (lambda (command)
-			 `(defun ,command (&rest args)
-    			    (interactive)
-    			    (mapcar #'fmakunbound ',commands)
-    			    (use-package ,name ,@plist)
-    			    (apply ,command args))))
-	 (command-body (if (and commands (not disabled))
-			   `(progn ,@(mapcar make-command commands))
-			 `(use-package ,name ,@plist)))
-	 (deps (plist-get plist :after))
+(defun use-package-normalize/:lazy (name keyword args)
+  (use-package-as-one (symbol-name keyword) args
+    (lambda (label arg)
+      arg)
+    t))
+
+(defun use-package-handler/:lazy (name keyword arg rest state)
+  (let* ((commands (plist-get rest :commands))
+	 (deps (plist-get rest :after))
+	 (body (use-package-process-keywords name rest state)) 
+	 (bootstrappers (cond
+			 (commands
+			  (let ((make-command (lambda (command)
+						`(defun ,command (&rest args)
+						   ,(format "Install %s and then execute the true %s" name command)
+    						   (interactive)
+						   (when (y-or-n-p ,(format "Do you wish to clone and use %s?" name))
+						     (progn (mapcar #'fmakunbound ',commands)
+    							    (funcall exec-body)
+    							    (apply #',command args)))))))
+			    `(progn ,@(mapcar make-command commands))))
+			 ((equal arg 't)
+			  `(funcall exec-body))
+			 (arg
+			  (let ((name arg))
+			    `(defun ,name ()
+			       ,(format "Install %s" name)
+    			       (interactive)
+			       (when (y-or-n-p ,(format "Do you wish to clone and use %s?" name))
+				 (progn (mapcar #'fmakunbound '(,name))
+    					(funcall exec-body))))))
+			 (t
+			  (use-package-error "invalid combination of :lazy and :commands"))))
 	 (eval-after-load-wrapper (lambda (acc elt) `(with-eval-after-load ',elt ,acc))))
-    `(progn
-       (if (straight-use-package-lazy ',name)
-	   (use-package ,name ,@plist)
-	 ,(seq-reduce eval-after-load-wrapper deps command-body)))))
+    `((let ((exec-body (lambda () ,@body)))
+	(if (straight-use-package-lazy ',name)
+	    (funcall exec-body)
+	  ,(seq-reduce eval-after-load-wrapper deps bootstrappers))))))
+
+(add-to-list 'use-package-keywords :lazy)
 
 (use-package no-littering
   :straight (no-littering :type git :host github :repo "emacscollective/no-littering")
@@ -194,13 +214,10 @@
   :config
   (load-theme 'modus-vivendi t))
 
-(use-package nix-mode
-  :disabled
-  :mode "\\.nix\\'")
-
 (use-package rainbow-delimiters :hook prog-mode-hook)
 
 (use-package hl-todo
+  :commands (hl-todo-mode)
   :bind (:map hl-todo-mode-map
 	      ("C-c p" . hl-todo-previous)
 	      ("C-c n" . hl-todo-next)
@@ -214,6 +231,8 @@
   (nyan-mode 1))
 
 (use-package vterm
+  :lazy
+  :commands (vterm my/new-term)
   :hook (vterm-mode . my/disable-line-number)
   :init
   (setq vterm-max-scrollback 1000)
@@ -278,7 +297,9 @@
   :config
   (evil-commentary-mode))
 
-(use-package magit)
+(use-package magit
+  :lazy
+  :commands (magit))
 
 (use-package git-gutter
   :config
@@ -288,6 +309,7 @@
   :hook (after-init-hook . global-company-mode))
 
 (use-package yasnippet
+  :lazy yasnippet
   :bind (:map yas-minor-mode-map
 	      ("<tab>" . nil)
 	      ("TAB" . nil)
@@ -326,13 +348,15 @@
   :config
   (marginalia-mode))
 
-(use-package embark-consult)
-
 (use-package embark
-  :after (embark-consult)
+  :lazy embark
   :bind (("C-S-a" . embark-act)
 	 :map minibuffer-local-map
 	 ("C-d" . embark-act)))
+
+(use-package embark-consult
+  :lazy t
+  :after (embark consult))
 
 (use-package projectile
   :bind (("C-M-p" . projectile-find-file))
@@ -349,19 +373,20 @@
   :hook prog-mode)
 
 (use-package treemacs
-  :disabled)
+  :lazy
+  :commands (treemacs))
 (use-package treemacs-evil
-  :after (treemacs evil)
-  :disabled)
+  :lazy t
+  :after (treemacs evil))
 (use-package treemacs-projectile
-  :after (treemacs projectile)
-  :disabled)
+  :lazy t
+  :after (treemacs projectile))
 (use-package treemacs-magit
-  :after (treemacs magit)
-  :disabled)
+  :lazy t
+  :after (treemacs magit))
 (use-package lsp-treemacs
-  :after (treemacs lsp-mode)
-  :disabled)
+  :lazy t
+  :after (treemacs lsp-mode))
 
 (use-package tree-sitter
   :hook (tree-sitter-after-on . tree-sitter-hl-mode)
@@ -371,6 +396,7 @@
   :after (tree-sitter))
 
 (use-package lsp-mode
+  :commands (lsp lsp-deferred)
   :init
   (setq lsp-keymap-prefix "C-c l")
   (setq lsp-lens-enable nil)
@@ -378,6 +404,7 @@
   (setq lsp-signature-render-documentation nil))
 
 (use-package lsp-ui
+  :commands (lsp-ui-mode)
   :after (lsp-mode)
   :init
   (setq lsp-ui-doc-show-with-cursor nil)
@@ -386,41 +413,58 @@
 
 (add-to-list 'auto-mode-alist '("\\.[tj]sx?$" . javascript-mode))
 
-(use-package json-mode :disabled)
+(use-package nix-mode
+  :lazy
+  :commands (nix-mode))
+
+(use-package json-mode
+  :lazy
+  :commands (json-mode))
 
 (use-package auctex
-  :disabled
+  :lazy auctex
   :init
   (setq TeX-auto-save t)
   (setq TeX-parse-self t)
   (setq-default TeX-master nil))
 
-(use-package rustic :disabled)
+(use-package rustic
+  :lazy
+  :commands (rustic-mode))
 
 (use-package go-mode
-  :disabled
-  :config
-  (add-to-list 'auto-mode-alist '("\\.go\\'" . go-mode)))
+  :lazy
+  :commands (go-mode))
 
 (use-package slime
-  :disabled
+  :lazy
+  :commands (slime)
   :init
   (setq inferior-lisp-program (executable-find "sbcl" exec-path)))
 
 (use-package cider
-  :disabled
+  :lazy
   :commands (cider-jack-in cider-connect cider-connect-cljs))
 
-(use-package tuareg :disabled)
-(use-package merlin :disabled)
-(use-package merlin-company :disabled)
-(use-package merlin-eldoc :disabled)
+(use-package tuareg
+  :lazy
+  :commands (tuareg-mode run-ocaml ocamldebug))
+(use-package merlin
+  :lazy
+  :commands (merlin-mode))
+(use-package merlin-company
+  :lazy t
+  :after (merlin company))
+(use-package merlin-eldoc
+  :lazy t
+  :after (merlin))
 
 (use-package lsp-pyright
-  :disabled
-  :after (lsp-mode)
-  :hook (python-mode . (lambda () (require 'lsp-pyright) (lsp-deferred)))
+  :lazy lsp-pyright
+  :hook (python-mode . lsp-deferred)
   :config
   (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]env\\'"))
 
-(use-package envrc :disabled)
+(use-package envrc
+  :lazy
+  :commands (envrc-global-mode))
