@@ -150,6 +150,8 @@
 	(eval-print-last-sexp)))
     (load bootstrap-file nil 'nomessage)))
 
+(setq use-package-always-defer t)
+
 ;; Use straight.el for use-package expressions
 (straight-use-package 'use-package)
 
@@ -198,6 +200,7 @@
 (add-to-list 'use-package-keywords :lazy)
 
 (use-package no-littering
+  :demand t
   :straight (no-littering :type git :host github :repo "emacscollective/no-littering")
   :init
   (setq custom-file (no-littering-expand-etc-file-name "custom.el"))
@@ -207,6 +210,7 @@
       (expand-file-name  "var/eln-cache/" user-emacs-directory)))))
 
 (use-package modus-themes
+  :demand t
   :init
   (setq modus-themes-italic-constructs t
 	modus-themes-bold-constructs nil
@@ -214,9 +218,11 @@
   :config
   (load-theme 'modus-vivendi t))
 
-(use-package rainbow-delimiters :hook prog-mode-hook)
+(use-package rainbow-delimiters
+  :hook prog-mode)
 
 (use-package hl-todo
+  :hook (prog-mode . hl-todo-mode)
   :commands (hl-todo-mode)
   :bind (:map hl-todo-mode-map
 	      ("C-c p" . hl-todo-previous)
@@ -227,6 +233,7 @@
   (global-hl-todo-mode))
 
 (use-package nyan-mode
+  :demand t
   :config
   (nyan-mode 1))
 
@@ -250,12 +257,14 @@
 	 ("C-h C" . helpful-command)))
 
 (use-package undo-tree
+  :demand t
   :init
   (setq undo-tree-auto-save-history nil)
   :config
   (global-undo-tree-mode 1))
 
 (use-package evil
+  :demand t
   :after (undo-tree)
   :init
   (setq evil-want-integration t)
@@ -286,6 +295,7 @@
   (evil-set-initial-state 'dashboard-mode 'normal))
 
 (use-package evil-collection
+  :demand t
   :after (evil)
   :init
   (setq evil-collection-company-use-tng nil)
@@ -294,6 +304,7 @@
   (evil-collection-init))
 
 (use-package evil-commentary
+  :demand t
   :after (evil)
   :config
   (evil-commentary-mode))
@@ -303,6 +314,7 @@
   :commands (magit))
 
 (use-package git-gutter
+  :demand t
   :config
   (global-git-gutter-mode +1))
 
@@ -311,6 +323,7 @@
 
 (use-package yasnippet
   :lazy yasnippet
+  :commands (yas-expand)
   :bind (:map yas-minor-mode-map
 	      ("<tab>" . nil)
 	      ("TAB" . nil)
@@ -319,16 +332,19 @@
   (yas-global-mode 1))
 
 (use-package vertico
+  :demand t
   :config
   (vertico-mode))
 
 (use-package orderless
+  :demand t
   :init
   (setq completion-styles '(orderless)
 	completion-category-defaults nil
 	completion-category-overrides '((file (styles . (partial-completion))))))
 
 (use-package consult
+  :demand t
   :bind (("C-s" . consult-line)
 	 ("C-M-l" . consult-imenu)
 	 ("C-M-j" . persp-switch-to-buffer*)
@@ -342,6 +358,7 @@
 	   completion-in-region-function #'consult-completion-in-region))
 
 (use-package marginalia
+  :demand t
   :init
   (setq marginalia-annotators '(marginalia-annotators-heavy
 				   marginalia-annotators-light
@@ -351,15 +368,19 @@
 
 (use-package embark
   :lazy embark
+  :commands (embark-act embark-act-all embark-collect embark-export)
   :bind (("C-S-a" . embark-act)
 	 :map minibuffer-local-map
 	 ("C-d" . embark-act)))
 
 (use-package embark-consult
   :lazy t
+  :commands (embark-collect embark-export)
   :after (embark consult))
 
 (use-package projectile
+  :lazy
+  :commands (projectile-mode projectile-find-file)
   :bind (("C-M-p" . projectile-find-file))
   :bind-keymap ("C-c p" . projectile-command-map)
   :config
@@ -368,6 +389,7 @@
   (projectile-mode))
 
 (use-package flycheck
+  :commands (flycheck-mode global-flycheck-mode)
   :hook lsp-mode)
 
 (use-package smartparens
@@ -378,22 +400,31 @@
   :commands (treemacs))
 (use-package treemacs-evil
   :lazy t
+  :commands (treemacs)
   :after (treemacs evil))
 (use-package treemacs-projectile
   :lazy t
+  :commands (treemacs)
   :after (treemacs projectile))
 (use-package treemacs-magit
   :lazy t
+  :commands (treemacs)
   :after (treemacs magit))
 (use-package lsp-treemacs
   :lazy t
+  :commands (treemacs)
   :after (treemacs lsp-mode))
 
 (use-package tree-sitter
-  :hook (tree-sitter-after-on . tree-sitter-hl-mode)
+  :lazy
+  :demand t
+  :commands (global-tree-sitter-mode)
+  :hook ((tree-sitter-after-on . tree-sitter-hl-mode))
   :config
   (global-tree-sitter-mode))
 (use-package tree-sitter-langs
+  :lazy t
+  :demand t
   :after (tree-sitter))
 
 (use-package lsp-mode
@@ -445,7 +476,7 @@
 
 (use-package cider
   :lazy
-  :commands (cider-jack-in cider-connect cider-connect-cljs))
+  :commands (cider cider-jack-in cider-jack-in-cljs cider-connect cider-connect-cljs))
 
 (use-package tuareg
   :lazy
