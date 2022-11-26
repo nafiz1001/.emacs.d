@@ -275,7 +275,8 @@
 		  circe-chat-mode
 		  circe-query-mode
 		  sauron-mode
-		  term-mode))
+		  term-mode
+		  artist-mode))
     (add-to-list 'evil-emacs-state-modes mode))
 
   (evil-global-set-key 'motion "j" 'evil-next-visual-line)
