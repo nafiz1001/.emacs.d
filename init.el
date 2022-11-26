@@ -169,16 +169,6 @@
 	 (deps (plist-get rest :after))
 	 (body (use-package-process-keywords name rest state)) 
 	 (bootstrappers (cond
-			 (commands
-			  (let ((make-command (lambda (command)
-						`(defun ,command (&rest args)
-						   ,(format "Install %s and then execute the true %s" name command)
-    						   (interactive)
-						   (when (y-or-n-p ,(format "Do you wish to clone and use %s?" name))
-						     (progn (mapcar #'fmakunbound ',commands)
-    							    (funcall exec-body)
-    							    (apply #',command args)))))))
-			    `(progn ,@(mapcar make-command commands))))
 			 ((equal arg 't)
 			  `(funcall exec-body))
 			 (arg
@@ -189,6 +179,16 @@
 			       (when (y-or-n-p ,(format "Do you wish to clone and use %s?" name))
 				 (progn (mapcar #'fmakunbound '(,name))
     					(funcall exec-body))))))
+			 (commands
+			  (let ((make-command (lambda (command)
+						`(defun ,command (&rest args)
+						   ,(format "Install %s and then execute the true %s" name command)
+    						   (interactive)
+						   (when (y-or-n-p ,(format "Do you wish to clone and use %s?" name))
+						     (progn (mapcar #'fmakunbound ',commands)
+    							    (funcall exec-body)
+    							    (apply #',command args)))))))
+			    `(progn ,@(mapcar make-command commands))))
 			 (t
 			  (use-package-error "invalid combination of :lazy and :commands"))))
 	 (eval-after-load-wrapper (lambda (acc elt) `(with-eval-after-load ',elt ,acc))))
@@ -322,7 +322,7 @@
   :hook (after-init-hook . global-company-mode))
 
 (use-package yasnippet
-  :lazy yasnippet
+  :lazy
   :commands (yas-expand)
   :bind (:map yas-minor-mode-map
 	      ("<tab>" . nil)
@@ -367,12 +367,11 @@
   (marginalia-mode))
 
 (use-package embark
-  :lazy embark
+  :lazy
   :commands (embark-act embark-act-all embark-collect embark-export)
   :bind (("C-S-a" . embark-act)
 	 :map minibuffer-local-map
 	 ("C-d" . embark-act)))
-
 (use-package embark-consult
   :lazy t
   :commands (embark-collect embark-export)
