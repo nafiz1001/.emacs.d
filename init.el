@@ -454,6 +454,7 @@
 
 (use-package auctex
   :lazy auctex
+  :hook (latex-mode TeX-mode plain-tex-mode)
   :init
   (setq TeX-auto-save t)
   (setq TeX-parse-self t)
