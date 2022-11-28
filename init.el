@@ -500,3 +500,7 @@
 (use-package envrc
   :lazy
   :commands (envrc-global-mode))
+
+(use-package ein
+  :lazy
+  :commands (ein:run ein:login))
