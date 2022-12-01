@@ -286,7 +286,8 @@
 		  sauron-mode
 		  term-mode
 		  artist-mode))
-    (add-to-list 'evil-emacs-state-modes mode))
+    (progn (add-to-list 'evil-emacs-state-modes mode)
+	   (evil-set-initial-state mode 'emacs)))
 
   (evil-global-set-key 'motion "j" 'evil-next-visual-line)
   (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
