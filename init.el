@@ -79,10 +79,6 @@
 		conf-mode-hook))
   (add-hook mode #'my/enable-line-number))
 
-;; Override some modes which derive from the above
-(dolist (mode '(org-mode-hook))
-  (add-hook mode #'my/disable-line-number))
-
 ;; prevent number lines in shell/term
 ;; https://github.com/daviwil/emacs-from-scratch/blob/d23348b4a52dde97f4f7cbcd66a519b5fd0a143c/init.el#L82-L88
 (dolist (mode '(term-mode-hook
