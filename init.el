@@ -171,7 +171,9 @@
 						   (when (y-or-n-p ,(format "Do you wish to clone and use %s?" name))
 						     (progn (mapcar #'fmakunbound ',commands)
     							    (funcall exec-body)
-    							    (apply #',command args)))))))
+							    (if (called-interactively-p 'any)
+								(call-interactively #',command)
+							      (apply #',command args))))))))
 			    `(progn ,@(mapcar make-command commands))))
 			 (t
 			  (use-package-error "invalid combination of :lazy and :commands"))))
