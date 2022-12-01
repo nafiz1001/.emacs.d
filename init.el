@@ -123,18 +123,6 @@
 (setq enable-recursive-minibuffers  t)
 (minibuffer-depth-indicate-mode 1)
 
-;; Org
-
-(setq org-agenda-files (file-expand-wildcards "~/org/*.org"))
-(setq org-startup-folded t)
-(setq org-adapt-indentation nil)
-(setq org-src-tab-acts-natively t)
-(setq org-cycle-separator-lines 0)
-
-(setq straight-vc-git-default-clone-depth 1)
-(setq package-enable-at-startup nil)
-(setq straight-use-package-by-default t)
-
 (unless (featurep 'straight)
   ;; Bootstrap straight.el
   (defvar bootstrap-version)
@@ -198,6 +186,27 @@
 	  ,(seq-reduce eval-after-load-wrapper deps bootstrappers))))))
 
 (add-to-list 'use-package-keywords :lazy)
+
+(defun tramp ()
+    nil)
+(use-package tramp
+  :lazy
+  :commands (tramp))
+
+(use-package org
+  :lazy
+  :mode "\\.org\\'"
+  :commands (org-mode)
+  :config
+  (setq org-agenda-files (file-expand-wildcards "~/org/*.org"))
+  (setq org-startup-folded t)
+  (setq org-adapt-indentation nil)
+  (setq org-src-tab-acts-natively t)
+  (setq org-cycle-separator-lines 0)
+
+  (setq straight-vc-git-default-clone-depth 1)
+  (setq package-enable-at-startup nil)
+  (setq straight-use-package-by-default t))
 
 (use-package no-littering
   :demand t
