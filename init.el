@@ -393,7 +393,9 @@
   :hook lsp-mode)
 
 (use-package smartparens
-  :hook prog-mode)
+  :hook prog-mode
+  :config
+  (require 'smartparens-config))
 
 (use-package treemacs
   :lazy
