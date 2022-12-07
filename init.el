@@ -192,11 +192,11 @@
 
 (add-to-list 'use-package-keywords :lazy)
 
-(defun tramp ()
-    nil)
 (use-package tramp
-  :lazy
-  :commands (tramp))
+  :lazy tramp
+  :init
+  (defun tramp ()
+    (require 'tramp)))
 
 (use-package org
   :lazy
