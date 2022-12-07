@@ -119,6 +119,12 @@
 (setq enable-recursive-minibuffers  t)
 (minibuffer-depth-indicate-mode 1)
 
+;; Straight
+
+(setq straight-vc-git-default-clone-depth 1)
+(setq package-enable-at-startup nil)
+(setq straight-use-package-by-default t)
+
 (unless (featurep 'straight)
   ;; Bootstrap straight.el
   (defvar bootstrap-version)
@@ -135,6 +141,7 @@
     (load bootstrap-file nil 'nomessage)))
 
 (setq use-package-always-defer t)
+(setq use-package-always-demand nil)
 
 ;; Use straight.el for use-package expressions
 (straight-use-package 'use-package)
@@ -200,11 +207,7 @@
   (setq org-startup-folded t)
   (setq org-adapt-indentation nil)
   (setq org-src-tab-acts-natively t)
-  (setq org-cycle-separator-lines 0)
-
-  (setq straight-vc-git-default-clone-depth 1)
-  (setq package-enable-at-startup nil)
-  (setq straight-use-package-by-default t))
+  (setq org-cycle-separator-lines 0))
 
 (use-package no-littering
   :demand t
