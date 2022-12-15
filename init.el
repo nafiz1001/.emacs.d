@@ -229,6 +229,7 @@
   (load-theme 'modus-vivendi t))
 
 (use-package rainbow-delimiters
+  :demand t
   :hook prog-mode)
 
 (use-package hl-todo
