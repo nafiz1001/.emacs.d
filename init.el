@@ -200,7 +200,6 @@
 
 (use-package org
   :lazy
-  :mode "\\.org\\'"
   :commands (org-mode)
   :config
   (setq org-agenda-files (file-expand-wildcards "~/org/*.org"))
