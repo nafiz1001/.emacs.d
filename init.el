@@ -232,6 +232,7 @@
   :hook prog-mode)
 
 (use-package hl-todo
+  :lazy
   :hook (prog-mode . hl-todo-mode)
   :commands (hl-todo-mode)
   :bind (:map hl-todo-mode-map
