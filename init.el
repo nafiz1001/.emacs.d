@@ -99,11 +99,6 @@
 
 (put 'dired-find-alternate-file 'disabled nil)
 
-;; LSP
-
-(setq gc-cons-threshold (* 1024 1024))
-(setq read-process-output-max (* 1024 1024))
-
 ;; Paren
 
 (require 'paren)
@@ -445,14 +440,17 @@
   :lazy
   :commands (lsp lsp-deferred)
   :init
+  (setq gc-cons-threshold (* 1024 1024))
+  (setq read-process-output-max (* 1024 1024))
+
+  (setq lsp-idle-delay 0.500)
+  (setq lsp-log-io nil) ; if set to true can cause a performance hit
+  (setq lsp-keep-workspace-alive nil)
+
   (setq lsp-keymap-prefix "C-c l")
   (setq lsp-lens-enable nil)
   (setq lsp-headerline-breadcrumb-enable nil)
   (setq lsp-signature-render-documentation nil))
-(use-package dap-mode
-  :lazy t
-  :after (lsp-mode)
-  :commands (dap-mode))
 
 (use-package lsp-ui
   :lazy t
@@ -462,6 +460,11 @@
   (setq lsp-ui-doc-show-with-cursor nil)
   (setq lsp-ui-doc-show-with-mouse t)
   (setq lsp-ui-sideline-enable nil))
+
+(use-package dap-mode
+  :lazy
+  :after (lsp-mode)
+  :commands (dap-mode))
 
 (add-to-list 'auto-mode-alist '("\\.[tj]sx?$" . javascript-mode))
 
