@@ -540,6 +540,13 @@
   :lazy
   :commands (ein:run ein:login))
 
+(use-package lsp-java
+  :lazy lsp-java
+  :hook (java-mode . (lambda ()
+                         (require 'lsp-java)
+                         (lsp-deferred)
+			 (require 'dap-java))))
+
 (use-package scala-mode
   :lazy
   :commands (scala-mode)
