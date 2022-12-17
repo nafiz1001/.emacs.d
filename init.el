@@ -516,8 +516,10 @@
   :lazy lsp-pyright
   :hook (python-mode . (lambda ()
                          (require 'lsp-pyright)
-                         (lsp-deferred)))
+                         (lsp-deferred)
+			 (require 'dap-python)))
   :init
+  (setq dap-python-debugger "debugpy")
   (setq lsp-pyright-use-library-code-for-types t)
   (setq lsp-pyright-stub-path (concat (getenv "HOME") "/src/github.com/microsoft/python-type-stubs"))
   :config
