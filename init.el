@@ -448,6 +448,9 @@
   (setq lsp-lens-enable nil)
   (setq lsp-headerline-breadcrumb-enable nil)
   (setq lsp-signature-render-documentation nil))
+(use-package dap-mode
+  :lazy
+  :commands (dap-mode))
 
 (use-package lsp-ui
   :commands (lsp-ui-mode)
