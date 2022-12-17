@@ -508,9 +508,14 @@
 
 (use-package lsp-pyright
   :lazy lsp-pyright
-  :hook (python-mode . lsp-deferred)
+  :hook (python-mode . (lambda ()
+                         (require 'lsp-pyright)
+                         (lsp-deferred)))
+  :init
+  (setq lsp-pyright-use-library-code-for-types t)
+  (setq lsp-pyright-stub-path (concat (getenv "HOME") "/src/github.com/microsoft/python-type-stubs"))
   :config
-  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]env\\'"))
+  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]v?env\\'"))
 
 (use-package envrc
   :lazy
