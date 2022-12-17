@@ -465,6 +465,10 @@
 
 (add-to-list 'auto-mode-alist '("\\.[tj]sx?$" . javascript-mode))
 
+(use-package pyvenv
+  :lazy
+  :commands (pyvenv-activate pyvenv-workon))
+
 (use-package nix-mode
   :lazy
   :commands (nix-mode))
