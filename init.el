@@ -442,6 +442,7 @@
   :after (tree-sitter))
 
 (use-package lsp-mode
+  :lazy
   :commands (lsp lsp-deferred)
   :init
   (setq lsp-keymap-prefix "C-c l")
@@ -449,10 +450,12 @@
   (setq lsp-headerline-breadcrumb-enable nil)
   (setq lsp-signature-render-documentation nil))
 (use-package dap-mode
-  :lazy
+  :lazy t
+  :after (lsp-mode)
   :commands (dap-mode))
 
 (use-package lsp-ui
+  :lazy t
   :commands (lsp-ui-mode)
   :after (lsp-mode)
   :init
