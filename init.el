@@ -387,7 +387,7 @@
 
 (use-package projectile
   :lazy
-  :commands (projectile-mode projectile-find-file)
+  :commands (projectile-mode projectile-find-file projectile-project-root)
   :bind (("C-M-p" . projectile-find-file))
   :bind-keymap ("C-c p" . projectile-command-map)
   :config
