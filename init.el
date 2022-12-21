@@ -194,8 +194,9 @@
     (require 'tramp)))
 
 (use-package org
-  :lazy
+  :disabled
   :commands (org-mode)
+  :mode "\\.org\\'"
   :config
   (setq org-agenda-files (file-expand-wildcards "~/org/*.org"))
   (setq org-startup-folded t)
