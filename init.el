@@ -114,6 +114,14 @@
 (setq enable-recursive-minibuffers  t)
 (minibuffer-depth-indicate-mode 1)
 
+;; Org
+
+(setq org-agenda-files (file-expand-wildcards "~/org/*.org"))
+(setq org-startup-folded t)
+(setq org-adapt-indentation nil)
+(setq org-src-tab-acts-natively t)
+(setq org-cycle-separator-lines 0)
+
 ;; Straight
 
 (setq straight-vc-git-default-clone-depth '(1 single-branch))
@@ -188,7 +196,7 @@
 (add-to-list 'use-package-keywords :lazy)
 
 (use-package tramp
-  :lazy tramp
+  :disabled
   :init
   (defun tramp ()
     (require 'tramp)))
@@ -196,13 +204,7 @@
 (use-package org
   :disabled
   :commands (org-mode)
-  :mode "\\.org\\'"
-  :config
-  (setq org-agenda-files (file-expand-wildcards "~/org/*.org"))
-  (setq org-startup-folded t)
-  (setq org-adapt-indentation nil)
-  (setq org-src-tab-acts-natively t)
-  (setq org-cycle-separator-lines 0))
+  :mode "\\.org\\'")
 
 (use-package no-littering
   :demand t
@@ -247,13 +249,14 @@
 (use-package vterm
   :lazy
   :commands (vterm my/new-term)
-  :hook (vterm-mode . my/disable-line-number)
   :init
   (setq vterm-max-scrollback 1000)
   (defun my/new-term (buffer-name)
     (interactive "sbuffer name: ")
     (vterm vterm-shell)
-    (rename-buffer buffer-name t)))
+    (rename-buffer buffer-name t))
+  :config
+  (add-hook 'vterm-mode-hook #'my/disable-line-number))
 
 (use-package helpful
   :demand t
@@ -383,7 +386,6 @@
 	 ("C-d" . embark-act)))
 (use-package embark-consult
   :lazy t
-  :commands (embark-collect embark-export)
   :after (embark consult))
 
 (use-package projectile
@@ -437,6 +439,10 @@
   :demand t
   :after (tree-sitter))
 
+(use-package envrc
+  :lazy
+  :commands (envrc-global-mode))
+
 (use-package lsp-mode
   :lazy
   :commands (lsp lsp-deferred)
@@ -465,7 +471,7 @@
 (use-package dap-mode
   :lazy
   :after (lsp-mode)
-  :commands (dap-mode))
+  :commands (dap-mode dap-register-debug-template))
 
 (add-to-list 'auto-mode-alist '("\\.[tj]sx?$" . javascript-mode))
 
@@ -532,10 +538,6 @@
   (setq lsp-pyright-stub-path (concat (getenv "HOME") "/src/github.com/microsoft/python-type-stubs"))
   :config
   (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]v?env\\'"))
-
-(use-package envrc
-  :lazy
-  :commands (envrc-global-mode))
 
 (use-package ein
   :lazy
