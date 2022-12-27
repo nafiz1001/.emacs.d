@@ -252,6 +252,7 @@
   (global-hl-todo-mode))
 
 (use-package nyan-mode
+  :disabled
   :demand t
   :config
   (nyan-mode 1))
