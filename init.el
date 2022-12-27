@@ -429,11 +429,8 @@
 
 (use-package tree-sitter
   :lazy
-  :demand t
-  :commands (global-tree-sitter-mode)
-  :hook ((tree-sitter-after-on . tree-sitter-hl-mode))
-  :config
-  (global-tree-sitter-mode))
+  :commands (tree-sitter-mode global-tree-sitter-mode)
+  :hook (tree-sitter-after-on . tree-sitter-hl-mode))
 (use-package tree-sitter-langs
   :lazy t
   :demand t
