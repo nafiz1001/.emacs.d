@@ -146,12 +146,6 @@
 (setq use-package-always-defer t)
 (setq use-package-always-demand nil)
 
-;; Use straight.el for use-package expressions
-(straight-use-package 'use-package)
-
-(use-package setup
-  :straight (setup :type git :host nil :repo "https://git.sr.ht/~pkal/setup"))
-
 (defun use-package-normalize/:lazy (name keyword args)
   (use-package-as-one (symbol-name keyword) args
     (lambda (label arg)
@@ -192,6 +186,13 @@
 	(if (straight-use-package-lazy ',name)
 	    (funcall exec-body)
 	  ,(seq-reduce eval-after-load-wrapper deps bootstrappers))))))
+
+;; Use straight.el for use-package expressions
+(straight-use-package 'use-package)
+
+(use-package setup
+  :disabled
+  :straight (setup :type git :host nil :repo "https://git.sr.ht/~pkal/setup"))
 
 (add-to-list 'use-package-keywords :lazy)
 
