@@ -511,7 +511,11 @@
 
 (use-package cider
   :lazy
-  :commands (cider cider-jack-in cider-jack-in-cljs cider-connect cider-connect-cljs))
+  :commands (cider cider-jack-in cider-jack-in-cljs cider-connect cider-connect-cljs)
+  :init
+  (setq cider-repl-buffer-size-limit 10000)
+  :config
+  (add-hook 'cider-repl-mode-hook #'(lambda () (setq scroll-conservatively 101))))
 
 (use-package tuareg
   :lazy
