@@ -326,9 +326,8 @@
   :commands (magit))
 
 (use-package git-gutter
-  :demand t
-  :config
-  (global-git-gutter-mode +1))
+  :lazy
+  :commands (git-gutter-mode))
 
 (use-package company-mode
   :hook (after-init-hook . global-company-mode))
