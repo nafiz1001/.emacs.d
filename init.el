@@ -225,6 +225,16 @@
   :config
   (load-theme 'modus-vivendi t))
 
+(use-package doom-themes
+  :disabled
+  :demand t
+  :init
+  (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
+	doom-themes-enable-italic t) ; if nil, italics is universally disabled
+  :config
+  (load-theme 'doom-acario-dark t)
+  (doom-themes-org-config))
+
 (use-package rainbow-delimiters
   :demand t
   :hook prog-mode)
