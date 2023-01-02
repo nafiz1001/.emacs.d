@@ -122,6 +122,11 @@
 (setq org-src-tab-acts-natively t)
 (setq org-cycle-separator-lines 0)
 
+;; Shell
+
+(setq shell-file-name "bash")
+(setq shell-command-switch "-ic")
+
 ;; Straight
 
 (setq straight-vc-git-default-clone-depth '(1 single-branch))
