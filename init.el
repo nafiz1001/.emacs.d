@@ -458,6 +458,13 @@
   :lazy
   :commands (envrc-global-mode))
 
+(use-package atomic-chrome
+  :lazy
+  :commands (atomic-chrome-start-server)
+  :init
+  (setq atomic-chrome-url-major-mode-alist
+	'(("overleaf.com" . latex-mode))))
+
 (use-package lsp-mode
   :lazy
   :commands (lsp lsp-deferred)
