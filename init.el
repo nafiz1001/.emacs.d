@@ -313,7 +313,9 @@
 		  circe-query-mode
 		  sauron-mode
 		  term-mode
-		  artist-mode))
+		  artist-mode
+		  dired-mode
+		  vterm-mode))
     (progn (add-to-list 'evil-emacs-state-modes mode)
 	   (evil-set-initial-state mode 'emacs)))
 
@@ -510,10 +512,13 @@
 
 (use-package rustic
   :lazy
+  :hook (rustic-mode . lsp-deferred)
   :commands (rustic-mode))
 
 (use-package go-mode
   :lazy
+  :hook ((go-mode . lsp-deferred)
+	 (before-save . gofmt-before-save))
   :commands (go-mode))
 
 (use-package slime
@@ -582,10 +587,11 @@
    'self-insert-command
    minibuffer-local-completion-map))
 (use-package lsp-metals
-  :lazy lsp-metals
+  :lazy t
   :custom
   ;; Metals claims to support range formatting by default but it supports range
   ;; formatting of multiline strings only. You might want to disable it so that
   ;; emacs can use indentation provided by scala-mode.
   (lsp-metals-server-args '("-J-Dmetals.allow-multiline-string-formatting=off"))
+  :after (scala-mode)
   :hook (scala-mode . lsp-deferred))
