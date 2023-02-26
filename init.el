@@ -417,6 +417,7 @@
   (projectile-mode))
 
 (use-package flycheck
+  :lazy
   :commands (flycheck-mode global-flycheck-mode)
   :hook lsp-mode)
 
