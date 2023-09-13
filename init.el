@@ -2,16 +2,7 @@
 
 ;; Borrowed a crap ton of configuration from https://github.com/daviwil/dotfiles/blob/master/Emacs.org
 
-(global-set-key (kbd "<escape>") 'keyboard-escape-quit)
-
-;; https://stackoverflow.com/a/13983506
-(defun my/nuke-other-buffers ()
-  (interactive)
-  (let* ((other-buffers (remove (current-buffer) (buffer-list))))
-    (mapcar 'kill-buffer other-buffers)
-    (delete-other-windows)))
-
-;; UI
+;; basic configs
 
 (setq inhibit-startup-message t)
 (setq inhibit-startup-screen t)
@@ -24,33 +15,7 @@
 (menu-bar-mode t)
 (scroll-bar-mode -1)
 
-;; Font
-
-(defun my/configure-font ()
-  (interactive)
-  "Configure font for first frame"
-  (let ((my-font (lambda (n)
-		   (concat
-		    (face-attribute 'default :family)
-		    "-"
-		    (number-to-string n))))
-	;; https://emacs.stackexchange.com/a/1062
-	(faces '(mode-line
-		  mode-line-buffer-id
-		  mode-line-emphasis
-		  mode-line-highlight
-		  mode-line-inactive)))
-    (set-face-attribute 'default nil :font (funcall my-font 16))
-    (mapc
-     (lambda (face) (set-face-attribute face nil :font (funcall my-font 10)))
-     faces))
-  (if (daemonp)
-      (remove-hook 'server-after-make-frame-hook #'my/configure-font)
-    (remove-hook 'window-setup-hook #'my/configure-font)))
-
-(if (daemonp)
-    (add-hook 'server-after-make-frame-hook #'my/configure-font)
-  (add-hook 'window-setup-hook #'my/configure-font))
+(setq echo-keystrokes 0.25)
 
 ;; Scrolling
 
@@ -62,11 +27,11 @@
 
 (setq-default truncate-lines t) ;; avoid jumpy scrolling
 
-;; Line/Number
+;; Line/Column Number
 
 (column-number-mode)
 
-(global-display-line-numbers-mode t)
+(global-display-line-numbers-mode nil)
 
 (defun my/disable-line-number ()
   (display-line-numbers-mode 0))
@@ -96,10 +61,6 @@
 
 (setq native-comp-async-report-warnings-errors nil) ;; stop annoying warning popup
 
-;; Dired
-
-(put 'dired-find-alternate-file 'disabled nil)
-
 ;; Coding System
 
 (set-default-coding-systems 'utf-8)
@@ -109,20 +70,14 @@
 (setq enable-recursive-minibuffers  t)
 (minibuffer-depth-indicate-mode 1)
 
-;; Paren
-
-(setq show-paren-style 'parenthesis)
-(require 'paren)
-(show-paren-mode +1)
-
 ;; Electric Boogaloo
 
-(electric-pair-mode t)
+;; typing an open parenthesis automatically inserts the corresponding
+;; closing parenthesis, and vice versa.  (Likewise for brackets, etc.).
+;; If the region is active, the parentheses (brackets, etc.) are
+;; inserted around the region instead
 
-;; enable remove dir-locals
-(defun my/enable-remote-dir-locals ()
-  (interactive)
-  (setq enable-remote-dir-locals t))
+(electric-pair-mode t)
 
 ;; font size adjustment
 
@@ -131,10 +86,57 @@
 (global-set-key (kbd "<C-wheel-up>") 'text-scale-increase)
 (global-set-key (kbd "<C-wheel-down>") 'text-scale-decrease)
 
+;; completions
+
+;; https://www.masteringemacs.org/article/understanding-minibuffer-completion
+(setq completions-format 'one-column)
+(setq suggest-key-bindings t)
+(setq completions-detailed t)
+(setq read-buffer-completion-ignore-case t)
+(setq read-file-name-completion-ignore-case t)
+
+;; utility functions
+
+;; https://stackoverflow.com/a/13983506
+(defun my/nuke-other-buffers ()
+  (interactive)
+  (let* ((other-buffers (remove (current-buffer) (buffer-list))))
+    (mapcar 'kill-buffer other-buffers)
+    (delete-other-windows)))
+
+(defun my/nuke-all-buffers ()
+  (interactive)
+  (when (fboundp 'eglot-shutdown-all)
+    (eglot-shutdown-all))
+  (mapcar 'kill-buffer (buffer-list))
+  (delete-other-windows))
+
+;; https://emacs.stackexchange.com/a/3172
+(defun my/open-init-file ()
+  "Open the init file."
+  (interactive)
+  (find-file user-init-file))
+
+(defun my/enable-remote-dir-locals ()
+  "Allows loading .dir-locals.el that is in remote"
+  (interactive)
+  (setq enable-remote-dir-locals t))
+
+;; use trash by default
+
+(setq delete-by-moving-to-trash t)
+
+;; enable mouse
+
+(xterm-mouse-mode 1)
+
+;; async-shell-command-buffer
+
+(setq async-shell-command-buffer 'confirm-rename-buffer)
+
 ;; straight.el
 
 (setq straight-use-package-by-default nil)
-(setq straight-vc-git-default-protocol 'ssh)
 (setq straight-vc-git-default-clone-depth 1)
 
 (defvar bootstrap-version)
@@ -157,59 +159,181 @@
 (use-package no-littering
   :straight t
   :config
-  (when (fboundp 'startup-redirect-eln-cache)
-    (startup-redirect-eln-cache
-     (convert-standard-filename
-      (expand-file-name  "var/eln-cache/" user-emacs-directory))))
   (setq custom-file (no-littering-expand-etc-file-name "custom.el"))
   (no-littering-theme-backups))
 
-(use-package org
+(use-package windmove
+  :config
+  (global-set-key (kbd "C-x <left>")  'windmove-left)
+  (global-set-key (kbd "C-x <right>") 'windmove-right)
+  (global-set-key (kbd "C-x <up>")    'windmove-up)
+  (global-set-key (kbd "C-x <down>")  'windmove-down))
+
+(use-package paren
   :init
-  (setq org-agenda-files "~/Documents/Org/")
-  (setq org-startup-folded t)
-  (setq org-adapt-indentation nil)
-  (setq org-src-tab-acts-natively t)
-  (setq org-cycle-separator-lines 0))
+  (setq show-paren-style 'parenthesis)
+  :config
+  (show-paren-mode +1))
+
+(use-package dired
+  :config
+  ;; Reuse same dired buffer, to prevent numerous buffers while navigating in dired
+  (put 'dired-find-alternate-file 'disabled nil)
+  (defun my/dired-find-file (filename &optional wildcards)
+    (interactive
+     (let ((default-directory (dired-current-directory)))
+       (find-file-read-args "Find file: "
+                            (confirm-nonexistent-file-or-buffer))))
+    (find-file filename wildcards))
+  (defun my/dired-hide-details-mode ()
+    (dired-hide-details-mode +1))
+  (define-key dired-mode-map "\C-x\C-f" #'my/dired-find-file)
+  (setq wdired-allow-to-change-permissions t)
+  (add-hook 'dired-mode-hook #'my/dired-hide-details-mode)
+  (setq dired-listing-switches "-al"))
+
+;; https://xenodium.com/emacs-viewing-webp-images/
+(use-package image
+  :custom
+  (image-use-external-converter t)
+  :init
+  (add-hook 'image-mode-hook #'my/disable-line-number))
+
+(use-package org
+  :straight t
+  :init
+  (custom-set-variables
+   '(org-directory "~/Documents/Org/")
+   '(org-agenda-files (list org-directory)))
+  (defun my/dired-org-file ()
+    (interactive)
+    (dired org-directory "-alR"))
+  (defun my/find-org-file (filename)
+    (interactive
+     (list (let* ((files (directory-files-recursively org-directory "\\(.org\\|.txt\\)$"))
+		  (files (mapcar (lambda (f) (file-relative-name f org-directory)) files)))
+	     (completing-read "Find org file: " files nil 'confirm))))
+    (unless (string-match-p "\\(.org\\|.txt\\)$" filename)
+      (setq filename (concat filename ".org")))
+    (find-file (concat org-directory filename)))
+  (setq org-agenda-prefix-format '((agenda . " %i %-12:c%?-12t% s") (todo . "%i")
+				   (tags . " %i %-12:c") (search . " %i %-12:c"))))
+
+(use-package doc-view
+  :config
+  (add-hook 'doc-view-mode-hook #'my/disable-line-number)
+  (add-hook 'pdf-view-mode-hook #'my/disable-line-number))
+
+(use-package eww
+  :config
+  (define-key eww-mode-map "W" #'shr-copy-url))
+
+(use-package modus-themes
+  :straight t
+  :config
+  (load-theme 'modus-vivendi :no-confirm))
+
+(use-package re-builder
+  :init
+  (setq reb-re-syntax 'read))
+
+(use-package tab-bar
+  :config
+  (tab-bar-mode))
+
+(use-package eglot
+  :init
+  (setq eldoc-idle-delay 0.75)
+  (setq flymake-no-changes-timeout 0.5)
+  :config
+  (add-to-list 'eglot-server-programs
+               `((java-mode java-ts-mode)
+		 .
+		 ;; TODO: investigate why defun gives you error here but not lambda.
+		 ,(lambda (&optional interactive)
+		    `("jdtls" "-data" ,(concat temporary-file-directory "jdtls/cache/" (file-name-nondirectory (directory-file-name (vc-root-dir))))))))
+  (cl-defmethod eglot-execute-command
+    (_server (_cmd (eql java.apply.workspaceEdit)) arguments)
+    "Eclipse JDT breaks spec and replies with edits as arguments."
+    (mapc #'eglot--apply-workspace-edit arguments))
+  
+  (add-to-list 'eglot-server-programs
+               '((rust-ts-mode rust-mode) .
+		 ("rust-analyzer" :initializationOptions (:check (:command "clippy"))))))
+(use-package eglot-x
+  :disabled
+  :straight (eglot-x
+	     :type git
+	     :host github
+	     :repo "nemethf/eglot-x")
+  :after (eglot)
+  :config
+  (eglot-x-setup))
+
+(use-package debbugs
+  :disabled
+  :straight t
+  :commands (debbugs-gnu
+	     debbugs-gnu-search
+	     debbugs-gnu-usertags
+	     debbugs-gnu-patches
+	     debbugs-gnu-bugs))
+
+(use-package system-packages
+  :straight t)
+(use-package use-package-ensure-system-package
+  :disabled
+  :after (system-packages)
+  :ensure t)
+
+(use-package which-key
+  :disabled
+  :straight t
+  :config
+  (which-key-mode))
+
+(use-package xclip
+  :straight t
+  :config
+  (xclip-mode 1))
+
+(use-package vlf
+  :straight t
+  :config
+  (require 'vlf-setup))
+
+(use-package obsidian
+  :disabled
+  :straight t
+  :config
+  (obsidian-specify-path "~/Documents/Obsidian")
+  (global-obsidian-mode t))
 
 (use-package rainbow-delimiters 
   :straight t
   :hook ((emacs-lisp-mode . rainbow-delimiters-mode)
 	 (lisp-mode . rainbow-delimiters-mode)))
 
-(use-package modus-themes
-  :straight (modus-themes
-	     :host github
-	     :repo "protesilaos/modus-themes")
-  :config
-  (load-theme 'modus-vivendi :no-confirm))
-(use-package catppuccin-theme
-  :disabled
-  :straight t
-  :init
-  (setq catppuccin-flavor 'mocha)
-  :config
-  (load-theme 'catppuccin :no-confirm))
-(use-package dracula-theme
-  :disabled
-  :straight (dracula-theme
-	     :type git
-	     :host github
-	     :repo "dracula/emacs"
-	     :local-repo "dracula-theme")
-  :config
-  (load-theme 'dracula :no-confirm))
-
 (use-package rainbow-mode
   :straight t
   :diminish
-  :hook org-mode prog-mode)
+  :hook ((org-mode . rainbow-mode)
+	 (prog-mode . rainbow-mode)))
 
 (use-package hl-todo
   :straight t
-  :hook (prog-mode . hl-todo-mode))
+  :hook (prog-mode . hl-todo-mode)
+  :config
+  (defun my/disable-hl-todo ()
+    (hl-todo-mode -1))
+  (add-hook 'org-mode-hook #'my/disable-hl-todo))
+
+(use-package icomplete
+  :config
+  (icomplete-mode +1))
 
 (use-package vertico
+  :disabled
   :straight t
   :config
   (vertico-mode))
@@ -217,19 +341,34 @@
 (use-package orderless
   :straight t
   :init
-  (setq completion-styles '(orderless)
+  (setq completion-styles '(orderless basic)
 	completion-category-defaults nil
 	completion-category-overrides '((file (styles . (partial-completion))))))
 
 (use-package consult
-  :straight t)
+  :disabled
+  :straight t
+  :bind (("C-x M-:" . consult-complex-command)     ;; orig. repeat-complex-command
+	 ("C-x b" . consult-buffer)                ;; orig. switch-to-buffer
+	 ("C-x r b" . consult-bookmark)            ;; orig. bookmark-jump
+	 ("C-x p b" . consult-project-buffer)      ;; orig. project-switch-to-buffer
+	 ("M-y" . consult-yank-pop)                ;; orig. yank-pop
+	 ("M-g g" . consult-goto-line)             ;; orig. goto-line
+	 ("M-g M-g" . consult-goto-line)           ;; orig. goto-line
+	 ("C-S-f" . consult-grep)
+	 ("C-S-p" . consult-find))
+  :init
+  ;; Use Consult to select xref locations with preview
+  (setq xref-show-xrefs-function #'consult-xref
+        xref-show-definitions-function #'consult-xref))
 
 (use-package marginalia
+  :disabled
   :straight t
   :init
   (setq marginalia-annotators '(marginalia-annotators-heavy
-				  marginalia-annotators-light
-				  nil))
+				marginalia-annotators-light
+				nil))
   :config
   (marginalia-mode))
 
@@ -245,6 +384,7 @@
       (corfu-mode 1)))
   (add-hook 'minibuffer-setup-hook #'+corfu-enable-in-minibuffer))
 (use-package corfu-terminal
+  :disabled
   :straight (corfu-terminal
 	     :type git
 	     :repo "https://codeberg.org/akib/emacs-corfu-terminal.git")
@@ -252,33 +392,57 @@
   (unless (display-graphic-p)
     (corfu-terminal-mode +1)))
 
-(use-package cape
-  :after (corfu)
-  :straight t
-  :init
-  (advice-add #'eglot-completion-at-point :around #'cape-wrap-buster))
-
 (use-package company
   :straight t
-  :hook (after-init . global-company-mode)
+  :init
+  (setq company-idle-delay 0.75)
   :config
-  (bind-key "C-M-i" #'company-complete)
-  (setq company-idle-delay nil))
+  (setq company-backends '((company-capf company-dabbrev-code)))
+  (global-company-mode))
+
+(use-package cape
+  :disabled
+  :straight t
+  :config
+  (advice-add #'eglot-completion-at-point :around #'cape-wrap-buster)
+  (add-to-list 'completion-at-point-functions #'cape-dabbrev)
+  ;; (add-to-list 'completion-at-point-functions #'cape-dict)
+  ;; (add-to-list 'completion-at-point-functions #'cape-elisp-block)
+  ;; (add-to-list 'completion-at-point-functions #'cape-elisp-symbol)
+  ;; (add-to-list 'completion-at-point-functions #'cape-file)
+  ;; (add-to-list 'completion-at-point-functions #'cape-history)
+  ;; (add-to-list 'completion-at-point-functions #'cape-keyword)
+  ;; Use Company backends as Capfs.
+  (dolist (capf
+	   (mapcar #'cape-company-to-capf
+		   (list #'company-files #'company-keywords #'company-dabbrev)))
+    (add-to-list 'completion-at-point-functions capf)))
 
 (use-package magit
   :straight t
-  :commands (magit-status))
+  :commands (magit-status magit))
 
 (use-package git-gutter
+  :disabled
   :straight t
   :config
-  (global-git-gutter-mode +1))
+  (global-git-gutter-mode))
 
-(cond ((and (>= emacs-major-version 29) (not (eq system-type 'darwin)))
-       (use-package treesit
-	 :config
-	 (add-to-list 'auto-mode-alist '("\\.[jt]sx\\'" . tsx-ts-mode))
-	 (add-to-list 'auto-mode-alist '("\\.java\\'" . java-ts-mode))))
+(cond ((and (>= emacs-major-version 29) (eq system-type 'gnu/linux)))
+      (use-package treesit
+	:config
+	;; (add-to-list 'auto-mode-alist '("\\.[jt]sx\\'" . tsx-ts-mode))
+	;; (add-to-list 'auto-mode-alist '("\\.java\\'" . java-ts-mode))
+	(add-to-list 'auto-mode-alist '("\\.c[xp][xp]\\'" . c++-ts-mode))
+	(setq treesit-language-source-alist
+	      '((java "https://github.com/tree-sitter/tree-sitter-java")
+		(tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src")
+		(cpp "https://github.com/tree-sitter/tree-sitter-cpp")))
+
+	(treesit-install-language-grammar 'cpp)
+	(setq major-mode-remap-alist
+	      '((c++-mode . c++-ts-mode)
+		(c-or-c++-mode . c++-ts-mode))))
       (t
        (use-package tree-sitter
 	 :straight t
@@ -289,31 +453,48 @@
 	 :straight t
 	 :after (tree-sitter))))
 
-(use-package eglot
-  :ensure t
-  :commands (eglot)
-  :config
-  (add-to-list 'eglot-server-programs
-               '((java-mode java-ts-mode) . ("jdt-language-server" "-data" "/tmp/jdtls-cache")))
-  (cl-defmethod eglot-execute-command
-    (_server (_cmd (eql java.apply.workspaceEdit)) arguments)
-    "Eclipse JDT breaks spec and replies with edits as arguments."
-    (mapc #'eglot--apply-workspace-edit arguments))
-
-  (add-to-list 'eglot-server-programs
-              '(nix-mode . ("nixd"))))
-(use-package eglot-x
+(use-package ace-window
   :disabled
-  :straight (eglot-x
-	     :type git
-	     :host github
-	     :repo "nemethf/eglot-x")
-  :after (eglot)
-  :config
-  (eglot-x-setup))
+  :straight t)
+
+(use-package docker
+  :straight t
+  :commands (docker))
+
+(use-package sly
+  :disabled
+  :straight t
+  :commands (sly)
+  :init
+  (setq inferior-lisp-program "/usr/bin/sbcl"))
+
+(use-package tuareg
+  :disabled
+  :straight t
+  :commands (tuareg-mode))
+(use-package merlin
+  :disabled
+  :straight t
+  :after (tuareg)
+  :hook ((tuareg-mode . merlin-mode)
+	 (caml-mode . merlin-mode))
+  :commands (merlin-mode))
+(use-package merlin-company
+  :disabled
+  :straight t
+  :after (merlin company))
+
+(defun my/rust-mode-hook ()
+  (setq indent-tabs-mode nil))
+(use-package rust-mode
+  :straight t
+  :mode "\\.rs\\'"
+  :hook (rust-mode . my/rust-mode-hook)
+  :commands (rust-mode))
 
 ;; backup lsp
 (use-package lsp-mode
+  :disabled
   :straight t
   :commands (lsp lsp-deferred)
   :init
@@ -329,6 +510,7 @@
   (setq lsp-headerline-breadcrumb-enable nil)
   (setq lsp-signature-render-documentation nil))
 (use-package lsp-ui
+  :disabled
   :straight t
   :commands (lsp-ui-mode)
   :after (lsp-mode)
@@ -337,34 +519,55 @@
   (setq lsp-ui-doc-show-with-mouse t)
   (setq lsp-ui-sideline-enable nil))
 (use-package lsp-java
+  :disabled
   :straight t
   :after (lsp-mode))
 
+;; eglot and obsidian needs this
 (use-package markdown-mode
+  :straight t)
+
+(use-package hyperbole
   :straight t)
 
 (unless (eq system-type 'windows-nt)
   (use-package vterm
-    ; install using package manager
+    :disabled
+    :straight t
     :init
     (setq vterm-max-scrollback 1000)
     :config
-    (defun my/new-term (buffer-name)
-      (interactive "sbuffer name: ")
-      (vterm vterm-shell)
-      (rename-buffer buffer-name t))
     (add-hook 'vterm-mode-hook #'my/disable-line-number)))
 
 (use-package nix-mode
+  :disabled
   :straight t
   :mode "\\.nix\\'")
+
+(use-package zig-mode
+  :disabled
+  :straight t
+  :mode "\\.zig\\'"
+  :commands (zig-mode))
 
 (use-package apheleia
   :straight t
   :config
-  (apheleia-global-mode +1))
+  ;; temporarily set default-directory to root of project
+  (defun shou/fix-apheleia-project-dir (orig-fn &rest args)
+    (let ((default-directory (vc-root-dir)))
+      (apply orig-fn args)))
+  (advice-add 'apheleia-format-buffer :around #'shou/fix-apheleia-project-dir)
+  (push '(spotless . ((concat default-directory "gradlew")
+		      "spotlessApply"
+		      (concat "-PspotlessIdeHook=" (apheleia-formatters-local-buffer-file-name))
+		      "-PspotlessIdeHookUseStdIn"
+		      "-PspotlessIdeHookUseStdOut"
+   		      "--quiet"))
+	apheleia-formatters))
 
 (use-package flymake-eslint
+  :disabled
   :straight t
   :commands (flymake-eslint-enable)
   :hook (((js-mode typescript-ts-mode-hook tsx-ts-mode-hook)  . flymake-eslint-enable))
@@ -372,6 +575,11 @@
   (setq flymake-eslint-defer-binary-check t))
 
 (use-package envrc
+  :disabled
   :straight t
   :config
   (envrc-global-mode))
+
+(use-package atomic-chrome
+  :straight t
+  :commands (atomic-chrome-start-server))
