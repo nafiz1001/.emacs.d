@@ -1,166 +1,139 @@
 ;; -*- lexical-binding: t; -*-
 
-;; Borrowed a crap ton of configuration from https://github.com/daviwil/dotfiles/blob/master/Emacs.org
-
-;; basic configs
-
-(setq inhibit-startup-message t)
-(setq inhibit-startup-screen t)
-(setq visible-bell t)
-
-(scroll-bar-mode 'right)
-(tool-bar-mode -1)
-(tooltip-mode -1)
-(set-fringe-mode 10)
-(menu-bar-mode t)
-(scroll-bar-mode -1)
-
-(setq echo-keystrokes 0.25)
-
-;; Scrolling
-
-(setq mouse-wheel-scroll-amount '(1 ((shift) . 1))) ;; one line at a time
-(setq mouse-wheel-progressive-speed nil) ;; don't accelerate scrolling
-(setq mouse-wheel-follow-mouse 't) ;; scroll window under mouse
-(setq scroll-step 1) ;; keyboard scroll one line at a time
-(setq use-dialog-box nil) ;; Disable dialog boxes since they weren't working in Mac OSX
-
-(setq-default truncate-lines t) ;; avoid jumpy scrolling
-
-;; Line/Column Number
-
-(column-number-mode)
-
-(global-display-line-numbers-mode nil)
-
-(defun my/disable-line-number ()
-  (display-line-numbers-mode 0))
-
-(defun my/enable-line-number ()
-  (display-line-numbers-mode 1))
-
-;; Enable line numbers for some modes
-(dolist (mode '(text-mode-hook
-		prog-mode-hook
-		conf-mode-hook))
-  (add-hook mode #'my/enable-line-number))
-
-;; prevent number lines in shell/term
-;; https://github.com/daviwil/emacs-from-scratch/blob/d23348b4a52dde97f4f7cbcd66a519b5fd0a143c/init.el#L82-L88
-(dolist (mode '(term-mode-hook
-		shell-mode-hook
-		eshell-mode-hook))
-  (add-hook mode #'my/disable-line-number))
-
-;; Auto-revert
-
-(global-auto-revert-mode 1)
-(setq global-auto-revert-mode t)
-
-;; Native Compilation
-
-(setq native-comp-async-report-warnings-errors nil) ;; stop annoying warning popup
-
-;; Coding System
-
-(set-default-coding-systems 'utf-8)
-
-;; Recursive Minibuffer
-
-(setq enable-recursive-minibuffers  t)
-(minibuffer-depth-indicate-mode 1)
-
-;; Electric Boogaloo
-
-;; typing an open parenthesis automatically inserts the corresponding
-;; closing parenthesis, and vice versa.  (Likewise for brackets, etc.).
-;; If the region is active, the parentheses (brackets, etc.) are
-;; inserted around the region instead
-
-(electric-pair-mode t)
-
-;; font size adjustment
-
-(global-set-key (kbd "C-=") 'text-scale-increase)
-(global-set-key (kbd "C--") 'text-scale-decrease)
-(global-set-key (kbd "<C-wheel-up>") 'text-scale-increase)
-(global-set-key (kbd "<C-wheel-down>") 'text-scale-decrease)
-
-;; completions
-
-;; https://www.masteringemacs.org/article/understanding-minibuffer-completion
-(setq completions-format 'one-column)
-(setq suggest-key-bindings t)
-(setq completions-detailed t)
-(setq read-buffer-completion-ignore-case t)
-(setq read-file-name-completion-ignore-case t)
-
-;; utility functions
-
-;; https://stackoverflow.com/a/13983506
-(defun my/nuke-other-buffers ()
-  (interactive)
-  (let* ((other-buffers (remove (current-buffer) (buffer-list))))
-    (mapcar 'kill-buffer other-buffers)
-    (delete-other-windows)))
-
-(defun my/nuke-all-buffers ()
-  (interactive)
-  (when (fboundp 'eglot-shutdown-all)
-    (eglot-shutdown-all))
-  (mapcar 'kill-buffer (buffer-list))
-  (delete-other-windows))
-
-;; https://emacs.stackexchange.com/a/3172
-(defun my/open-init-file ()
-  "Open the init file."
-  (interactive)
-  (find-file user-init-file))
-
-(defun my/enable-remote-dir-locals ()
-  "Allows loading .dir-locals.el that is in remote"
-  (interactive)
-  (setq enable-remote-dir-locals t))
-
-;; use trash by default
-
-(setq delete-by-moving-to-trash t)
-
-;; enable mouse
-
-(xterm-mouse-mode 1)
-
-;; async-shell-command-buffer
-
-(setq async-shell-command-buffer 'confirm-rename-buffer)
-
-;; straight.el
-
-(setq straight-use-package-by-default nil)
-(setq straight-vc-git-default-clone-depth 1)
-
-(defvar bootstrap-version)
-(let ((bootstrap-file
-       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
-      (bootstrap-version 5))
-  (unless (file-exists-p bootstrap-file)
-    (with-current-buffer
-        (url-retrieve-synchronously
-         "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
-         'silent 'inhibit-cookies)
-      (goto-char (point-max))
-      (eval-print-last-sexp)))
-  (load bootstrap-file nil 'nomessage))
-
-(straight-use-package 'use-package)
-
 ;; packages
 
+(require 'package)
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
+(setq package-archives
+      '(("gnu" . "https://elpa.gnu.org/packages/")
+	("nongnu" . "https://elpa.nongnu.org/nongnu/")
+	("melpa" . "https://melpa.org/packages/"))
+      package-archive-priorities
+      '(("gnu" . 10)
+	("nongnu" . 9)
+	("melpa" . 8)))
+
+(package-initialize)
+
+(package-install 'use-package)
+
 (use-package no-littering
-  :straight t
+  :ensure t
   :config
   (setq custom-file (no-littering-expand-etc-file-name "custom.el"))
   (no-littering-theme-backups))
+
+(use-package emacs
+  :config
+  ;; Borrowed a crap ton of configuration from https://github.com/daviwil/dotfiles/blob/master/Emacs.org
+  
+  ;; basic configs
+  
+  (setq inhibit-startup-message t)
+  (setq inhibit-startup-screen t)
+  (setq visible-bell t)
+
+  (scroll-bar-mode 'right)
+  (tool-bar-mode -1)
+  (tooltip-mode -1)
+  (set-fringe-mode 10)
+  (menu-bar-mode t)
+  (scroll-bar-mode -1)
+
+  (setq echo-keystrokes 0.05)
+
+  ;; Scrolling
+
+  (setq mouse-wheel-scroll-amount '(1 ((shift) . 1))) ;; one line at a time
+  (setq mouse-wheel-progressive-speed nil) ;; don't accelerate scrolling
+  (setq mouse-wheel-follow-mouse 't) ;; scroll window under mouse
+  (setq scroll-step 1) ;; keyboard scroll one line at a time
+  (setq use-dialog-box nil) ;; Disable dialog boxes since they weren't working in Mac OSX
+
+  (setq-default truncate-lines t) ;; avoid jumpy scrolling
+
+  ;; Line/Column Number
+
+  (column-number-mode)
+
+  (global-display-line-numbers-mode nil)
+
+  (defun my/disable-line-number ()
+    (display-line-numbers-mode 0))
+
+  (defun my/enable-line-number ()
+    (display-line-numbers-mode 1))
+
+  ;; Enable line numbers for some modes
+  (dolist (mode '(text-mode-hook
+		  prog-mode-hook
+		  conf-mode-hook))
+    (add-hook mode #'my/enable-line-number))
+
+  ;; prevent number lines in shell/term
+  ;; https://github.com/daviwil/emacs-from-scratch/blob/d23348b4a52dde97f4f7cbcd66a519b5fd0a143c/init.el#L82-L88
+  (dolist (mode '(term-mode-hook
+		  shell-mode-hook
+		  eshell-mode-hook))
+    (add-hook mode #'my/disable-line-number))
+
+  ;; Auto-revert
+  (global-auto-revert-mode 1)
+  (setq global-auto-revert-mode t)
+
+  ;; Native Compilation
+  (setq native-comp-async-report-warnings-errors nil) ;; stop annoying warning popup
+
+  ;; Coding System
+  (set-default-coding-systems 'utf-8)
+
+  ;; Recursive Minibuffer
+  (setq enable-recursive-minibuffers  t)
+  (minibuffer-depth-indicate-mode 1)
+
+  ;; Electric Boogaloo
+  ;; typing an open parenthesis automatically inserts the corresponding
+  ;; closing parenthesis, and vice versa.  (Likewise for brackets, etc.).
+  ;; If the region is active, the parentheses (brackets, etc.) are
+  ;; inserted around the region instead
+  (electric-pair-mode t)
+
+  ;; font size adjustment
+  (global-set-key (kbd "C-=") 'text-scale-increase)
+  (global-set-key (kbd "C--") 'text-scale-decrease)
+  (global-set-key (kbd "<C-wheel-up>") 'text-scale-increase)
+  (global-set-key (kbd "<C-wheel-down>") 'text-scale-decrease)
+
+  ;; completions
+  ;; https://www.masteringemacs.org/article/understanding-minibuffer-completion
+  (setq completions-format 'one-column)
+  (setq suggest-key-bindings t)
+  (setq completions-detailed t)
+  (setq read-buffer-completion-ignore-case t)
+  (setq read-file-name-completion-ignore-case t)
+
+  ;; utility functions
+
+  (defun my/enable-remote-dir-locals ()
+    "Allows loading .dir-locals.el that is in remote"
+    (interactive)
+    (setq enable-remote-dir-locals t))
+
+  ;; use trash by default
+  (setq delete-by-moving-to-trash t)
+
+  ;; enable mouse
+  (xterm-mouse-mode 1)
+
+  ;; async-shell-command-buffer
+  (setq async-shell-command-buffer 'confirm-rename-buffer)
+
+  (dolist (mode '(prog-mode-hook
+		  org-mode-hook))
+    (add-hook mode #'display-fill-column-indicator-mode)))
+
+(use-package hideif
+  :hook ((c-mode c++-mode c-or-c++-mode) . hide-ifdef-mode))
 
 (use-package windmove
   :config
@@ -200,14 +173,10 @@
   (add-hook 'image-mode-hook #'my/disable-line-number))
 
 (use-package org
-  :straight t
   :init
   (custom-set-variables
    '(org-directory "~/Documents/Org/")
    '(org-agenda-files (list org-directory)))
-  (defun my/dired-org-file ()
-    (interactive)
-    (dired org-directory "-alR"))
   (defun my/find-org-file (filename)
     (interactive
      (list (let* ((files (directory-files-recursively org-directory "\\(.org\\|.txt\\)$"))
@@ -228,11 +197,6 @@
   :config
   (define-key eww-mode-map "W" #'shr-copy-url))
 
-(use-package modus-themes
-  :straight t
-  :config
-  (load-theme 'modus-vivendi :no-confirm))
-
 (use-package re-builder
   :init
   (setq reb-re-syntax 'read))
@@ -240,6 +204,21 @@
 (use-package tab-bar
   :config
   (tab-bar-mode))
+
+(use-package auth-source
+  :config
+  (setq auth-sources '("secrets:Login"
+		       "secrets:session"
+		       default)))
+
+(use-package gnus
+  :config
+  (setq gnus-select-method '(nntp "news.gmane.io")))
+
+(use-package modus-themes
+  :ensure t
+  :config
+  (load-theme 'modus-vivendi :no-confirm))
 
 (use-package eglot
   :init
@@ -260,27 +239,22 @@
   (add-to-list 'eglot-server-programs
                '((rust-ts-mode rust-mode) .
 		 ("rust-analyzer" :initializationOptions (:check (:command "clippy"))))))
-(use-package eglot-x
-  :disabled
-  :straight (eglot-x
-	     :type git
-	     :host github
-	     :repo "nemethf/eglot-x")
-  :after (eglot)
-  :config
-  (eglot-x-setup))
 
 (use-package debbugs
-  :disabled
-  :straight t
+  :ensure t
   :commands (debbugs-gnu
 	     debbugs-gnu-search
 	     debbugs-gnu-usertags
 	     debbugs-gnu-patches
 	     debbugs-gnu-bugs))
 
+(use-package breadcrumb
+  :ensure t
+  :commands (breadcrumb-mode breadcrumb-local-mode))
+
 (use-package system-packages
-  :straight t)
+  :disabled
+  :ensure t)
 (use-package use-package-ensure-system-package
   :disabled
   :after (system-packages)
@@ -288,40 +262,38 @@
 
 (use-package which-key
   :disabled
-  :straight t
+  :ensure t
   :config
   (which-key-mode))
 
 (use-package xclip
-  :straight t
+  :ensure t
   :config
   (xclip-mode 1))
 
 (use-package vlf
-  :straight t
+  :ensure t
   :config
   (require 'vlf-setup))
 
 (use-package obsidian
   :disabled
-  :straight t
+  :ensure t
   :config
   (obsidian-specify-path "~/Documents/Obsidian")
   (global-obsidian-mode t))
 
 (use-package rainbow-delimiters 
-  :straight t
-  :hook ((emacs-lisp-mode . rainbow-delimiters-mode)
-	 (lisp-mode . rainbow-delimiters-mode)))
+  :ensure t
+  :hook ((emacs-lisp-mode lisp-mode) . rainbow-delimiters-mode))
 
 (use-package rainbow-mode
-  :straight t
+  :ensure t
   :diminish
-  :hook ((org-mode . rainbow-mode)
-	 (prog-mode . rainbow-mode)))
+  :hook ((org-mode prog-mode) . rainbow-mode))
 
 (use-package hl-todo
-  :straight t
+  :ensure t
   :hook (prog-mode . hl-todo-mode)
   :config
   (defun my/disable-hl-todo ()
@@ -334,12 +306,12 @@
 
 (use-package vertico
   :disabled
-  :straight t
+  :ensure t
   :config
   (vertico-mode))
 
 (use-package orderless
-  :straight t
+  :ensure t
   :init
   (setq completion-styles '(orderless basic)
 	completion-category-defaults nil
@@ -347,7 +319,7 @@
 
 (use-package consult
   :disabled
-  :straight t
+  :ensure t
   :bind (("C-x M-:" . consult-complex-command)     ;; orig. repeat-complex-command
 	 ("C-x b" . consult-buffer)                ;; orig. switch-to-buffer
 	 ("C-x r b" . consult-bookmark)            ;; orig. bookmark-jump
@@ -364,7 +336,7 @@
 
 (use-package marginalia
   :disabled
-  :straight t
+  :ensure t
   :init
   (setq marginalia-annotators '(marginalia-annotators-heavy
 				marginalia-annotators-light
@@ -372,46 +344,28 @@
   :config
   (marginalia-mode))
 
-(use-package corfu
-  :disabled
-  :straight t
-  :config
-  (global-corfu-mode)
-  (corfu-echo-mode)
-  (defun +corfu-enable-in-minibuffer ()
-    "Enable Corfu completion in the minibuffer, e.g., `eval-expression'."
-    (when (where-is-internal #'completion-at-point (list (current-local-map)))
-      (corfu-mode 1)))
-  (add-hook 'minibuffer-setup-hook #'+corfu-enable-in-minibuffer))
-(use-package corfu-terminal
-  :disabled
-  :straight (corfu-terminal
-	     :type git
-	     :repo "https://codeberg.org/akib/emacs-corfu-terminal.git")
-  :config
-  (unless (display-graphic-p)
-    (corfu-terminal-mode +1)))
-
 (use-package company
-  :straight t
+  :disabled
+  :ensure t
   :init
-  (setq company-idle-delay 0.75)
+  (setq company-idle-delay 0.5)
   :config
   (setq company-backends '((company-capf company-dabbrev-code)))
   (global-company-mode))
 
 (use-package cape
   :disabled
-  :straight t
+  :ensure t
   :config
   (advice-add #'eglot-completion-at-point :around #'cape-wrap-buster)
-  (add-to-list 'completion-at-point-functions #'cape-dabbrev)
+  ;; (add-to-list 'completion-at-point-functions #'cape-dabbrev)
   ;; (add-to-list 'completion-at-point-functions #'cape-dict)
   ;; (add-to-list 'completion-at-point-functions #'cape-elisp-block)
   ;; (add-to-list 'completion-at-point-functions #'cape-elisp-symbol)
   ;; (add-to-list 'completion-at-point-functions #'cape-file)
   ;; (add-to-list 'completion-at-point-functions #'cape-history)
   ;; (add-to-list 'completion-at-point-functions #'cape-keyword)
+
   ;; Use Company backends as Capfs.
   (dolist (capf
 	   (mapcar #'cape-company-to-capf
@@ -419,75 +373,72 @@
     (add-to-list 'completion-at-point-functions capf)))
 
 (use-package magit
-  :straight t
+  :ensure t
   :commands (magit-status magit))
 
 (use-package git-gutter
   :disabled
-  :straight t
+  :ensure t
   :config
   (global-git-gutter-mode))
 
-(cond ((and (>= emacs-major-version 29) (eq system-type 'gnu/linux)))
-      (use-package treesit
-	:config
-	;; (add-to-list 'auto-mode-alist '("\\.[jt]sx\\'" . tsx-ts-mode))
-	;; (add-to-list 'auto-mode-alist '("\\.java\\'" . java-ts-mode))
-	(add-to-list 'auto-mode-alist '("\\.c[xp][xp]\\'" . c++-ts-mode))
-	(setq treesit-language-source-alist
-	      '((java "https://github.com/tree-sitter/tree-sitter-java")
-		(tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src")
-		(cpp "https://github.com/tree-sitter/tree-sitter-cpp")))
+(cond ((and (>= emacs-major-version 29) (eq system-type 'gnu/linux) (not (file-exists-p "/etc/NIXOS")))
+       (use-package treesit
+	 :config
+	 (setq treesit-language-source-alist
+	       '((java "https://github.com/tree-sitter/tree-sitter-java")
+		 (tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src")
+		 (cpp "https://github.com/tree-sitter/tree-sitter-cpp")
+		 (c "https://github.com/tree-sitter/tree-sitter-c")))
 
-	(treesit-install-language-grammar 'cpp)
-	(setq major-mode-remap-alist
-	      '((c++-mode . c++-ts-mode)
-		(c-or-c++-mode . c++-ts-mode))))
+	 (add-to-list 'major-mode-remap-alist '(c-mode . c-ts-mode))
+	 (add-to-list 'major-mode-remap-alist '(c++-mode . c++-ts-mode))
+	 (add-to-list 'major-mode-remap-alist
+                      '(c-or-c++-mode . c-or-c++-ts-mode))))
       (t
        (use-package tree-sitter
-	 :straight t
+	 :ensure t
 	 :hook (tree-sitter-after-on . tree-sitter-hl-mode)
 	 :config
 	 (global-tree-sitter-mode))
        (use-package tree-sitter-langs
-	 :straight t
+	 :ensure t
 	 :after (tree-sitter))))
 
 (use-package ace-window
   :disabled
-  :straight t)
+  :ensure t)
 
 (use-package docker
-  :straight t
-  :commands (docker))
+  :ensure t
+  :commands (docker docker-images docker-containers docker-volumes))
 
 (use-package sly
   :disabled
-  :straight t
+  :ensure t
   :commands (sly)
   :init
   (setq inferior-lisp-program "/usr/bin/sbcl"))
 
 (use-package tuareg
   :disabled
-  :straight t
+  :ensure t
   :commands (tuareg-mode))
 (use-package merlin
   :disabled
-  :straight t
+  :ensure t
   :after (tuareg)
-  :hook ((tuareg-mode . merlin-mode)
-	 (caml-mode . merlin-mode))
+  :hook ((tuareg-mode caml-mode) . merlin-mode)
   :commands (merlin-mode))
 (use-package merlin-company
   :disabled
-  :straight t
+  :ensure t
   :after (merlin company))
 
 (defun my/rust-mode-hook ()
   (setq indent-tabs-mode nil))
 (use-package rust-mode
-  :straight t
+  :ensure t
   :mode "\\.rs\\'"
   :hook (rust-mode . my/rust-mode-hook)
   :commands (rust-mode))
@@ -495,7 +446,7 @@
 ;; backup lsp
 (use-package lsp-mode
   :disabled
-  :straight t
+  :ensure t
   :commands (lsp lsp-deferred)
   :init
   (setq gc-cons-threshold (* 1024 1024))
@@ -511,7 +462,7 @@
   (setq lsp-signature-render-documentation nil))
 (use-package lsp-ui
   :disabled
-  :straight t
+  :ensure t
   :commands (lsp-ui-mode)
   :after (lsp-mode)
   :init
@@ -520,38 +471,63 @@
   (setq lsp-ui-sideline-enable nil))
 (use-package lsp-java
   :disabled
-  :straight t
+  :ensure t
   :after (lsp-mode))
 
 ;; eglot and obsidian needs this
 (use-package markdown-mode
-  :straight t)
+  :ensure t)
 
 (use-package hyperbole
-  :straight t)
+  :disabled
+  :ensure t)
 
 (unless (eq system-type 'windows-nt)
   (use-package vterm
     :disabled
-    :straight t
+    :ensure t
     :init
     (setq vterm-max-scrollback 1000)
     :config
     (add-hook 'vterm-mode-hook #'my/disable-line-number)))
 
 (use-package nix-mode
-  :disabled
-  :straight t
-  :mode "\\.nix\\'")
+  :ensure t
+  :init
+  (defun my/nixos-rebuild-switch-flake (hostname)
+    "Run sudo nixos-rebuild switch --flake '.#HOSTNAME' in the current project's root directory."
+    (interactive
+     (progn
+       (unless (json-available-p)
+       (error "JSON library or support unavailable"))
+       (let* ((default-directory (project-root (project-current t)))
+	      (nix-flake-show (json-parse-string (shell-command-to-string "nix flake show --quiet --json 2>/dev/null")))
+	      (keys (let (keys)
+		      (maphash (lambda (k v) (push k keys)) nix-flake-show)
+		      keys))
+	      (type (completing-read "Pick type: " keys nil t))
+	      (value (gethash type nix-flake-show))
+	      (keys (let (keys)
+		      (maphash (lambda (k v) (push k keys)) value)
+		      keys))
+	      (hostname (completing-read "Pick hostname: " keys nil t)))
+	 (list hostname))))
+    (let ((default-directory (project-root (project-current t))))
+      (async-shell-command (format "sudo nixos-rebuild switch --flake '.#%s'" hostname)  "*nixos-rebuild*")))
+  ;; TODO: still does not work when working with emacs source code
+  (defun my/fix-nix-indentation ()
+    (setq-local indent-tabs-mode nil)
+    (setq-local tab-width 2))
+  (add-hook 'nix-mode-hook #'my/fix-nix-indentation))
 
 (use-package zig-mode
   :disabled
-  :straight t
+  :ensure t
   :mode "\\.zig\\'"
   :commands (zig-mode))
 
 (use-package apheleia
-  :straight t
+  :ensure t
   :config
   ;; temporarily set default-directory to root of project
   (defun shou/fix-apheleia-project-dir (orig-fn &rest args)
@@ -568,18 +544,17 @@
 
 (use-package flymake-eslint
   :disabled
-  :straight t
+  :ensure t
   :commands (flymake-eslint-enable)
   :hook (((js-mode typescript-ts-mode-hook tsx-ts-mode-hook)  . flymake-eslint-enable))
   :init
   (setq flymake-eslint-defer-binary-check t))
 
 (use-package envrc
-  :disabled
-  :straight t
+  :ensure t
   :config
   (envrc-global-mode))
 
 (use-package atomic-chrome
-  :straight t
+  :ensure t
   :commands (atomic-chrome-start-server))
