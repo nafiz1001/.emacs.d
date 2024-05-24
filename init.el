@@ -1,3 +1,5 @@
+;; -*- lexical-binding: t -*-
+
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -12,7 +14,7 @@
  '(icomplete-mode t)
  '(inhibit-startup-screen t)
  '(mouse-wheel-progressive-speed nil)
- '(package-selected-packages '(no-littering))
+ '(package-selected-packages '(markdown-mode nix-mode no-littering))
  '(package-vc-selected-packages
    '((no-littering :vc-backend Git :url "https://github.com/emacscollective/no-littering")))
  '(proced-show-remote-processes t)
