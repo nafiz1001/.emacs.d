@@ -32,4 +32,6 @@
 
 (global-auto-revert-mode)
 
-(use-package no-littering)
+(use-package no-littering
+  :config
+  (no-littering-theme-backups))
