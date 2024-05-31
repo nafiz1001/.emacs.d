@@ -14,6 +14,7 @@
  '(icomplete-mode t)
  '(inhibit-startup-screen t)
  '(mouse-wheel-progressive-speed nil)
+ '(org-directory "~/Documents/Org")
  '(package-selected-packages '(markdown-mode nix-mode no-littering))
  '(package-vc-selected-packages
    '((no-littering :vc-backend Git :url "https://github.com/emacscollective/no-littering")))
@@ -31,7 +32,12 @@
  )
 
 (global-auto-revert-mode)
+(put 'dired-find-alternate-file 'disabled nil)
+
+(package-install-selected-packages t)
+(package-vc-install-selected-packages)
 
 (use-package no-littering
   :config
   (no-littering-theme-backups))
+
