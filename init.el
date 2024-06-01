@@ -41,3 +41,7 @@
   :config
   (no-littering-theme-backups))
 
+(use-package org
+  :config
+  (cl-pushnew 'visual-line-mode org-mode-hook))
+
