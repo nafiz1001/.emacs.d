@@ -15,7 +15,7 @@
  '(inhibit-startup-screen t)
  '(mouse-wheel-progressive-speed nil)
  '(org-directory "~/Documents/Org")
- '(package-selected-packages '(markdown-mode nix-mode no-littering))
+ '(package-selected-packages '(editorconfig markdown-mode nix-mode no-littering))
  '(package-vc-selected-packages
    '((no-littering :vc-backend Git :url "https://github.com/emacscollective/no-littering")))
  '(proced-show-remote-processes t)
@@ -33,6 +33,7 @@
 
 (global-auto-revert-mode)
 (put 'dired-find-alternate-file 'disabled nil)
+;; (setq completion-ignore-case t) TODO: figure out how to make project-find-file case insensitive
 
 (package-install-selected-packages t)
 (package-vc-install-selected-packages)
@@ -43,5 +44,20 @@
 
 (use-package org
   :config
+  ;; TODO: make org-mode-hook initial functions not lambda
   (cl-pushnew 'visual-line-mode org-mode-hook))
 
+(use-package eglot
+  :after (treesit)
+  :config
+  (add-to-list 'eglot-server-programs `(((js-mode :language-id "javascript")
+                                         (js-ts-mode :language-id "javascript")
+					 (tsx-ts-mode  :language-id "typescriptreact")
+					 (typescript-ts-mode :language-id "typescript")
+					 (typescript-mode  :language-id "typescript"))
+					.
+					("typescript-language-server" "--stdio"))))
+
+(use-package editorconfig
+  :config
+  (editorconfig-mode 1))
