@@ -1,5 +1,11 @@
 ;; -*- lexical-binding: t -*-
 
+(require 'package)
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
+;; Comment/uncomment this line to enable MELPA Stable if desired.  See `package-archive-priorities`
+;; and `package-pinned-packages`. Most users will not need or want to do this.
+;;(add-to-list 'package-archives '("melpa-stable" . "https://stable.melpa.org/packages/") t)
+
 (unless (package-installed-p 'vc-use-package)
   (package-vc-install "https://github.com/slotThe/vc-use-package"))
 (require 'vc-use-package)
@@ -7,30 +13,55 @@
 (use-package no-littering
   :vc (:fetcher github :repo emacscollective/no-littering)
   :config
-  (no-littering-theme-backups))
+  (no-littering-theme-backups)
+  (setq custom-file (expand-file-name "custom.el" user-emacs-directory)))
 
+;; scrolling
+(use-package emacs
+  :custom
+  (mouse-wheel-progressive-speed nil)
+  (scroll-conservatively 101))
+
+;; completion
+(use-package emacs
+  :custom
+  (completion-styles '(basic partial-completion emacs22 substring))
+  (completions-format 'one-column)
+  (icomplete-mode t))
+
+;; other
 (use-package emacs
   :custom
   (column-number-mode t)
-  (completion-styles '(basic partial-completion emacs22 substring))
-  (completions-format 'one-column)
   (custom-enabled-themes '(modus-vivendi))
   (electric-pair-mode t)
   (global-display-line-numbers-mode t)
-  (icomplete-mode t)
   (inhibit-startup-screen t)
-  (mouse-wheel-progressive-speed nil)
-  (proced-show-remote-processes t)
-  (scroll-conservatively 101)
   (size-indication-mode t)
-  (tab-bar-mode t)
   (tool-bar-mode nil)
   (visible-bell t)
   :config
   (global-auto-revert-mode)
-  (put 'dired-find-alternate-file 'disabled nil)
   ;; (setq completion-ignore-case t) TODO: figure out how to make project-find-file case insensitive
   )
+
+(use-package tab-bar
+  :custom
+  (tab-bar-mode t))
+
+(use-package proced
+  :custom
+  (proced-show-remote-processes t))
+
+(use-package dired
+  :config
+  (put 'dired-find-alternate-file 'disabled nil))
+
+(use-package windmove
+  :bind (("C-x <left>"  . windmove-left)
+	 ("C-x <right>" . windmove-right)
+	 ("C-x <up>"    . windmove-up)
+	 ("C-x <down>"  . windmove-down)))
 
 (use-package org
   :custom
@@ -54,3 +85,14 @@
   :ensure t
   :config
   (editorconfig-mode 1))
+
+(use-package treesit-auto
+  :ensure t
+  :custom
+  (treesit-auto-install 'prompt)
+  :config
+  (treesit-auto-add-to-auto-mode-alist 'all)
+  (global-treesit-auto-mode))
+
+(use-package magit
+  :ensure t)
