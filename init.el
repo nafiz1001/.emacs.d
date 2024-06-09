@@ -11,7 +11,7 @@
 (require 'vc-use-package)
 
 (use-package no-littering
-  :vc (:fetcher github :repo emacscollective/no-littering)
+  :ensure t
   :config
   (no-littering-theme-backups)
   (setq custom-file (expand-file-name "custom.el" user-emacs-directory)))
@@ -29,19 +29,24 @@
   (completions-format 'one-column)
   (icomplete-mode t))
 
-;; other
+;; appearance
 (use-package emacs
   :custom
   (column-number-mode t)
   (custom-enabled-themes '(modus-vivendi))
-  (electric-pair-mode t)
   (global-display-line-numbers-mode t)
   (inhibit-startup-screen t)
   (size-indication-mode t)
   (tool-bar-mode nil)
-  (visible-bell t)
+  (visible-bell t))
+
+;; other
+(use-package emacs
+  :custom
+  (electric-pair-mode t)
   :config
   (global-auto-revert-mode)
+  (xterm-mouse-mode)
   ;; (setq completion-ignore-case t) TODO: figure out how to make project-find-file case insensitive
   )
 
@@ -96,3 +101,13 @@
 
 (use-package magit
   :ensure t)
+
+(use-package xclip
+  :ensure t
+  :config
+  (xclip-mode 1))
+
+(use-package apheleia
+  :ensure t
+  :config
+  (apheleia-global-mode +1))
