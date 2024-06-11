@@ -111,3 +111,7 @@
   :ensure t
   :config
   (apheleia-global-mode +1))
+
+(use-package nix-mode
+  :ensure t
+  :mode "\\.nix\\'")
