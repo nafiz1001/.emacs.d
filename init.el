@@ -16,33 +16,24 @@
   (no-littering-theme-backups)
   (setq custom-file (expand-file-name "custom.el" user-emacs-directory)))
 
-;; scrolling
 (use-package emacs
+  ;; scrolling
   :custom
   (mouse-wheel-progressive-speed nil)
-  (scroll-conservatively 101))
-
-;; completion
-(use-package emacs
-  :custom
+  (scroll-conservatively 101)
+  ;; completion
   (completion-styles '(basic partial-completion emacs22 substring))
   (completions-format 'one-column)
-  (icomplete-mode t))
-
-;; appearance
-(use-package emacs
-  :custom
+  (icomplete-mode t)
+  ;; appearance
   (column-number-mode t)
   (custom-enabled-themes '(modus-vivendi))
   (global-display-line-numbers-mode t)
   (inhibit-startup-screen t)
   (size-indication-mode t)
   (tool-bar-mode nil)
-  (visible-bell t))
-
-;; other
-(use-package emacs
-  :custom
+  (visible-bell t)
+  ;; other
   (electric-pair-mode t)
   :config
   (global-auto-revert-mode)
