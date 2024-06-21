@@ -1,10 +1,9 @@
 ;; -*- lexical-binding: t -*-
 
 (require 'package)
-(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
-;; Comment/uncomment this line to enable MELPA Stable if desired.  See `package-archive-priorities`
-;; and `package-pinned-packages`. Most users will not need or want to do this.
-;;(add-to-list 'package-archives '("melpa-stable" . "https://stable.melpa.org/packages/") t)
+(setopt package-archives '(("gnu" . "https://elpa.gnu.org/packages/")
+			   ("nongnu" . "https://elpa.nongnu.org/nongnu/")
+			   ("melpa" . "https://melpa.org/packages/")))
 
 (unless (package-installed-p 'vc-use-package)
   (package-vc-install "https://github.com/slotThe/vc-use-package"))
@@ -52,6 +51,10 @@
 (use-package dired
   :config
   (put 'dired-find-alternate-file 'disabled nil))
+
+(use-package wdired
+  :custom
+  (wdired-allow-to-change-permissions t))
 
 (use-package windmove
   :bind (("C-x <left>"  . windmove-left)
@@ -101,8 +104,21 @@
 (use-package apheleia
   :ensure t
   :config
-  (apheleia-global-mode +1))
+  (apheleia-global-mode +1)
+  (setf (alist-get 'prettier-json apheleia-formatters)
+	'("apheleia-npx"
+	  "prettier"
+	  "--stdin-filepath"
+	  filepath
+	  (if (equal (file-name-nondirectory (apheleia-formatters-local-buffer-file-name)) "package.json")
+	      "--parser=json-stringify"
+	    "--parser=json")
+	  (apheleia-formatters-js-indent "--use-tabs" "--tab-width"))))
 
 (use-package nix-mode
   :ensure t
   :mode "\\.nix\\'")
+
+(use-package keycast
+  :disabled
+  :ensure t)
