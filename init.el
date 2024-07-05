@@ -67,7 +67,11 @@
   (org-directory "~/Documents/Org")
   :config
   ;; TODO: make org-mode-hook initial functions not lambda
-  (cl-pushnew 'visual-line-mode org-mode-hook))
+  )
+
+(use-package xref
+  :custom
+  (xref-search-program 'ripgrep))
 
 (use-package eglot
   :after (treesit)
