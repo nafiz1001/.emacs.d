@@ -34,11 +34,11 @@
   (visible-bell t)
   ;; other
   (electric-pair-mode t)
+  (completion-ignore-case t)
+  (read-file-name-completion-ignore-case t)
   :config
   (global-auto-revert-mode)
-  (xterm-mouse-mode)
-  ;; (setq completion-ignore-case t) TODO: figure out how to make project-find-file case insensitive
-  )
+  (xterm-mouse-mode))
 
 (use-package tab-bar
   :custom
