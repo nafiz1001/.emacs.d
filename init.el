@@ -5,6 +5,9 @@
 			   ("nongnu" . "https://elpa.nongnu.org/nongnu/")
 			   ("melpa" . "https://melpa.org/packages/")))
 
+(when (not (= emacs-major-version 29))
+  (error (format "Only works with Emacs 29" emacs-major-version)))
+
 (unless (package-installed-p 'vc-use-package)
   (package-vc-install "https://github.com/slotThe/vc-use-package"))
 (require 'vc-use-package)
@@ -62,12 +65,16 @@
 	 ("C-x <up>"    . windmove-up)
 	 ("C-x <down>"  . windmove-down)))
 
+(add-to-list 'load-path "~/projects/org-mode/lisp") ; https://github.com/nafiz1001/org-mode/tree/patch
 (use-package org
   :custom
   (org-directory "~/Documents/Org")
-  :config
-  ;; TODO: make org-mode-hook initial functions not lambda
-  )
+  (org-capture-templates '(("d"
+			    "Diary/Journalling"
+			    item
+			    (file+headline (lambda () (expand-file-name (concat org-directory "/Diary/" (format-time-string "%Y-%m-%d.org"))))
+					   (lambda () (format-time-string (org-time-stamp-format t t) (current-time)))))))
+  :config)
 
 (use-package xref
   :custom
@@ -126,3 +133,17 @@
 (use-package keycast
   :disabled
   :ensure t)
+
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(package-vc-selected-packages
+   '((vc-use-package :vc-backend Git :url "https://github.com/slotThe/vc-use-package"))))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
