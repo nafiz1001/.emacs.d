@@ -73,7 +73,9 @@
 			    "Diary/Journalling"
 			    item
 			    (file+headline (lambda () (expand-file-name (concat org-directory "/Diary/" (format-time-string "%Y-%m-%d.org"))))
-					   (lambda () (format-time-string (org-time-stamp-format t t) (current-time)))))))
+					   (lambda () (format-time-string (org-time-stamp-format t t) (current-time))))
+			    "- %?"
+			    :empty-lines 0)))
   :config)
 
 (use-package xref
