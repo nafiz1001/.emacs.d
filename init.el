@@ -76,7 +76,8 @@
 					   (lambda () (format-time-string (org-time-stamp-format t t) (current-time))))
 			    "- %?"
 			    :empty-lines 0)))
-  :config)
+  :config
+  (add-hook 'org-mode-hook #'visual-line-mode))
 
 (use-package xref
   :custom
