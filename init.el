@@ -39,9 +39,11 @@
   (electric-pair-mode t)
   (completion-ignore-case t)
   (read-file-name-completion-ignore-case t)
+  (delete-by-moving-to-trash t)
   :config
   (global-auto-revert-mode)
-  (xterm-mouse-mode))
+  (xterm-mouse-mode)
+  (put 'upcase-region 'disabled nil))
 
 (use-package tab-bar
   :custom
