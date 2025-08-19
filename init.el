@@ -67,13 +67,13 @@
 (use-package org
   :custom
   (org-directory "~/Documents/Org")
-;  (org-capture-templates '(("d"
-;			    "Diary/Journalling"
-;			    item
-;			    (file+headline (lambda () (expand-file-name (concat org-directory "/Diary/" (format-time-string "%Y-%m-%d.org"))))
-;					   (lambda () (format-time-string (org-time-stamp-format t t) (current-time))))
-;			    "- %?"
-;			    :empty-lines 0)))
+  ;;  (org-capture-templates '(("d"
+  ;;			    "Diary/Journalling"
+  ;;			    item
+  ;;			    (file+headline (lambda () (expand-file-name (concat org-directory "/Diary/" (format-time-string "%Y-%m-%d.org"))))
+  ;;					   (lambda () (format-time-string (org-time-stamp-format t t) (current-time))))
+  ;;			    "- %?"
+  ;;			    :empty-lines 0)))
   :config
   (add-hook 'org-mode-hook #'visual-line-mode))
 
@@ -81,8 +81,12 @@
   :custom
   (xref-search-program 'ripgrep))
 
+(defun eglot-visual-line-mode ()
+  "Fixes scrolling getting blocked by type hints so long they wrap at the edge of the buffer."
+  (when (eglot-managed-p)
+    (visual-line-mode)))
 (use-package eglot
-  :after (treesit)
+  :after (treesit) 
   :config
   (add-to-list 'eglot-server-programs `(((js-mode :language-id "javascript")
                                          (js-ts-mode :language-id "javascript")
@@ -90,7 +94,21 @@
 					 (typescript-ts-mode :language-id "typescript")
 					 (typescript-mode  :language-id "typescript"))
 					.
-					("typescript-language-server" "--stdio"))))
+					("typescript-language-server" "--stdio")))
+  (add-hook 'eglot-managed-mode-hook #'eglot-visual-line-mode))
+
+;; configurations for flatpak Emacs
+(use-package tramp
+  :config
+  (if (not (assoc "toolbox" tramp-methods))
+      (push
+       (cons
+	"toolbox"
+	'((tramp-login-program "flatpak-spawn --host toolbox")
+	  (tramp-login-args (("enter" "-c") ("%h")))
+	  (tramp-remote-shell "/bin/sh")
+	  (tramp-remote-shell-args ("-i") ("-c"))))
+       tramp-methods)))
 
 (use-package editorconfig
   :ensure t
@@ -122,21 +140,10 @@
   :ensure t
   :mode "\\.nix\\'")
 
+(use-package rpm-spec-mode
+  :ensure t
+  :mode "\\.spec\\'")
+
 (use-package keycast
   :disabled
   :ensure t)
-
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(package-vc-selected-packages
-   '((vc-use-package :vc-backend Git :url
-		     "https://github.com/slotThe/vc-use-package"))))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )

@@ -90,6 +90,6 @@ straight/
 eln-cache
 tree-sitter/
 bookmarks
-custom.el
+# custom.el
 
 projects.eld
