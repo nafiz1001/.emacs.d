@@ -20,6 +20,8 @@
   :custom
   (mouse-wheel-progressive-speed nil)
   (scroll-conservatively 101)
+  ;; minibuffer
+  (enable-recursive-minibuffers t)
   ;; completion
   (completion-styles '(basic partial-completion emacs22 substring))
   (completions-format 'one-column)
@@ -82,6 +84,7 @@
   (xref-search-program 'ripgrep))
 
 (use-package citre
+  :ensure t
   :config
   (require 'citre-config))
 
