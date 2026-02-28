@@ -9,11 +9,13 @@
   (package-vc-install "https://github.com/slotThe/vc-use-package"))
 (require 'vc-use-package)
 
+(setq custom-file (expand-file-name "custom.el" user-emacs-directory))
+(load custom-file)
+
 (use-package no-littering
   :ensure t
   :config
-  (no-littering-theme-backups)
-  (setq custom-file (expand-file-name "custom.el" user-emacs-directory)))
+  (no-littering-theme-backups))
 
 (use-package emacs
   ;; scrolling
