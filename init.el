@@ -1,5 +1,9 @@
 ;; -*- lexical-binding: t -*-
 
+(setq custom-file (expand-file-name "custom.el" user-emacs-directory))
+(when (file-exists-p custom-file)
+  (load custom-file))
+
 (require 'package)
 (setopt package-archives '(("gnu" . "https://elpa.gnu.org/packages/")
 			   ("nongnu" . "https://elpa.nongnu.org/nongnu/")
@@ -8,9 +12,6 @@
 (unless (package-installed-p 'vc-use-package)
   (package-vc-install "https://github.com/slotThe/vc-use-package"))
 (require 'vc-use-package)
-
-(setq custom-file (expand-file-name "custom.el" user-emacs-directory))
-(load custom-file)
 
 (use-package no-littering
   :ensure t
@@ -156,3 +157,12 @@
 (use-package keycast
   :disabled
   :ensure t)
+
+(use-package helpful
+  :ensure t
+  :bind (("C-h f" . helpful-callable)
+	 ("C-h v" . helpful-variable)
+	 ("C-h k" . helpful-key)
+	 ("C-h x" . helpful-command)
+	 ("C-c C-d" . helpful-at-point)
+	 ("C-h F" . helpful-function)))
