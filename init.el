@@ -47,6 +47,10 @@
   (xterm-mouse-mode)
   (put 'upcase-region 'disabled nil))
 
+(defun electric-pair-pairs-for-single-quote ()
+  (interactive)
+  (setq-local electric-pair-pairs (append electric-pair-pairs '((?' . ?')))))
+
 (use-package tab-bar
   :custom
   (tab-bar-mode t))
@@ -96,7 +100,7 @@
   (when (eglot-managed-p)
     (visual-line-mode)))
 (use-package eglot
-  :after (treesit) 
+  :after (treesit)
   :config
   (add-to-list 'eglot-server-programs `(((js-mode :language-id "javascript")
                                          (js-ts-mode :language-id "javascript")
@@ -171,16 +175,20 @@
   :ensure t)
 
 (defun freezeman-backend ()
-  (kill-buffer "python manage.py runserver")
+  (interactive)
+  (ignore-error '(error "python manage.py runserver")
+    (kill-buffer "python manage.py runserver"))
   (async-shell-command
    (concat "cd " (file-name-concat (project-root (project-current t)) "backend")
 	   " && . ./env/bin/activate"
 	   " && python manage.py runserver")
    "python manage.py runserver"))
+
 (defun freezeman-frontend ()
-  (kill-buffer "npm start")
+  (interactive)
+  (ignore-error '(error "No buffer named npm start")
+    (kill-buffer "npm start"))
   (async-shell-command
    (concat "cd " (file-name-concat (project-root (project-current t)) "frontend")
 	   " && npm start")
    "npm start"))
-
