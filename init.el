@@ -170,3 +170,17 @@
 (use-package copilot
   :ensure t)
 
+(defun freezeman-backend ()
+  (kill-buffer "python manage.py runserver")
+  (async-shell-command
+   (concat "cd " (file-name-concat (project-root (project-current t)) "backend")
+	   " && . ./env/bin/activate"
+	   " && python manage.py runserver")
+   "python manage.py runserver"))
+(defun freezeman-frontend ()
+  (kill-buffer "npm start")
+  (async-shell-command
+   (concat "cd " (file-name-concat (project-root (project-current t)) "frontend")
+	   " && npm start")
+   "npm start"))
+
