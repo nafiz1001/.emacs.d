@@ -177,7 +177,8 @@
 (defun freezeman-backend ()
   (interactive)
   (ignore-error '(error "python manage.py runserver")
-    (kill-buffer "python manage.py runserver"))
+    (let ((kill-buffer-query-functions nil))
+      (kill-buffer "python manage.py runserver")))
   (async-shell-command
    (concat "cd " (file-name-concat (project-root (project-current t)) "backend")
 	   " && . ./env/bin/activate"
@@ -187,7 +188,8 @@
 (defun freezeman-frontend ()
   (interactive)
   (ignore-error '(error "No buffer named npm start")
-    (kill-buffer "npm start"))
+    (let ((kill-buffer-query-functions nil))
+      (kill-buffer "npm start")))
   (async-shell-command
    (concat "cd " (file-name-concat (project-root (project-current t)) "frontend")
 	   " && npm start")
