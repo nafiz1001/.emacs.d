@@ -166,3 +166,7 @@
 	 ("C-h x" . helpful-command)
 	 ("C-c C-d" . helpful-at-point)
 	 ("C-h F" . helpful-function)))
+
+(use-package copilot
+  :ensure t)
+
