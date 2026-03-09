@@ -129,6 +129,11 @@
   :config
   (editorconfig-mode 1))
 
+;; End of Vanilla Configs
+
+(use-package mistty
+  :ensure t)
+
 (use-package treesit-auto
   :ensure t
   :custom
