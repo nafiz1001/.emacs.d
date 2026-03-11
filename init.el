@@ -71,6 +71,17 @@
   :custom
   (wdired-allow-to-change-permissions t))
 
+(use-package diredfl
+  :ensure t
+  :config
+  (diredfl-global-mode))
+
+(use-package dired-preview
+  :disabled
+  :ensure t
+  :config
+  (dired-preview-global-mode 0))
+
 (use-package windmove
   :ensure t
   :bind (("C-x <left>"  . windmove-left)
