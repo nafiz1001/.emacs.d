@@ -131,6 +131,13 @@
 
 ;; End of Vanilla Configs
 
+(use-package orderless
+  :ensure t
+  :custom
+  (completion-styles '(orderless basic))
+  (completion-category-overrides '((file (styles partial-completion))))
+  (completion-pcm-leading-wildcard t)) ;; Emacs 31: partial-completion behaves like substring
+
 (use-package mistty
   :ensure t)
 
@@ -144,6 +151,13 @@
 
 (use-package magit
   :ensure t)
+
+(use-package diff-hl
+  :vc (diff-hl :url "https://github.com/dgutov/diff-hl"
+               :branch "master")
+  :hook (magit-post-refresh . diff-hl-magit-post-refresh)
+  :custom
+  (global-diff-hl-mode))
 
 (use-package xclip
   :ensure t
