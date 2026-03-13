@@ -141,6 +141,7 @@
 
 
 (use-package orderless
+  :disabled
   :ensure t
   :custom
   (completion-styles '(orderless basic))
