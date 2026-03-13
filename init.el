@@ -90,11 +90,6 @@
   :custom
   (xref-search-program 'ripgrep))
 
-(use-package citre
-  :ensure t
-  :config
-  (require 'citre-config))
-
 (defun eglot-visual-line-mode ()
   "Fixes scrolling getting blocked by type hints so long they wrap at the edge of the buffer."
   (when (eglot-managed-p)
@@ -130,6 +125,12 @@
   (editorconfig-mode 1))
 
 ;; End of Vanilla Configs
+
+(use-package citre
+  :ensure t
+  :config
+  (require 'citre-config))
+
 
 (use-package orderless
   :ensure t
