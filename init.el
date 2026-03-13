@@ -170,6 +170,7 @@
   (apheleia-global-mode +1))
 
 (use-package nix-mode
+  :disabled
   :ensure t
   :mode "\\.nix\\'")
 
