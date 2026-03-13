@@ -19,6 +19,7 @@
   (no-littering-theme-backups))
 
 (use-package emacs
+  :ensure t
   ;; scrolling
   :custom
   (mouse-wheel-progressive-speed nil)
@@ -52,10 +53,12 @@
   (setq-local electric-pair-pairs (append electric-pair-pairs '((?' . ?')))))
 
 (use-package tab-bar
+  :ensure t
   :custom
   (tab-bar-mode t))
 
 (use-package proced
+  :ensure t
   :custom
   (proced-show-remote-processes t))
 
@@ -64,16 +67,19 @@
   (put 'dired-find-alternate-file 'disabled nil))
 
 (use-package wdired
+  :ensure t
   :custom
   (wdired-allow-to-change-permissions t))
 
 (use-package windmove
+  :ensure t
   :bind (("C-x <left>"  . windmove-left)
 	 ("C-x <right>" . windmove-right)
 	 ("C-x <up>"    . windmove-up)
 	 ("C-x <down>"  . windmove-down)))
 
 (use-package org
+  :ensure t
   :custom
   (org-directory "~/Documents/Org")
   ;;  (org-capture-templates '(("d"
@@ -87,6 +93,7 @@
   (add-hook 'org-mode-hook #'visual-line-mode))
 
 (use-package xref
+  :ensure t
   :custom
   (xref-search-program 'ripgrep))
 
@@ -106,9 +113,10 @@
 					("typescript-language-server" "--stdio")))
   (add-hook 'eglot-managed-mode-hook #'eglot-visual-line-mode))
 
-;; configurations for flatpak Emacs
 (use-package tramp
+  :ensure t
   :config
+  ;; configurations for flatpak Emacs
   (if (not (assoc "toolbox" tramp-methods))
       (push
        (cons
