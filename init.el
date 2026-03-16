@@ -215,6 +215,9 @@
 (use-package copilot
   :ensure t)
 
+(use-package docker
+  :ensure t)
+
 (defun freezeman-backend ()
   (interactive)
   (ignore-error '(error "python manage.py runserver")
