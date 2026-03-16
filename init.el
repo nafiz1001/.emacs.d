@@ -30,6 +30,7 @@
   (completion-styles '(basic partial-completion emacs22 substring))
   (completions-format 'one-column)
   (icomplete-mode t)
+  (read-buffer-completion-ignore-case t)
   ;; appearance
   (column-number-mode t)
   (custom-enabled-themes '(modus-vivendi))
@@ -218,13 +219,15 @@
 (use-package docker
   :ensure t)
 
+(defconst freezeman-project-root "~/projects/freezeman/")
+
 (defun freezeman-backend ()
   (interactive)
   (ignore-error '(error "python manage.py runserver")
     (let ((kill-buffer-query-functions nil))
       (kill-buffer "python manage.py runserver")))
   (async-shell-command
-   (concat "cd " (file-name-concat (project-root (project-current t)) "backend")
+   (concat "cd " (file-name-concat freezeman-project-root "backend")
 	   " && . ./env/bin/activate"
 	   " && python manage.py runserver")
    "python manage.py runserver"))
@@ -235,6 +238,17 @@
     (let ((kill-buffer-query-functions nil))
       (kill-buffer "npm start")))
   (async-shell-command
-   (concat "cd " (file-name-concat (project-root (project-current t)) "frontend")
+   (concat "cd " (file-name-concat freezeman-project-root "frontend")
 	   " && npm start")
    "npm start"))
+
+(defun freezeman-shell ()
+  (interactive)
+  (run-python (concat (file-name-concat freezeman-project-root "backend" "env" "bin" "python")
+                      " "
+                      (file-name-concat "backend" "manage.py")
+                      " "
+                      "shell")
+              'project
+              t))
+
