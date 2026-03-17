@@ -178,6 +178,7 @@
   :vc (diff-hl :url "https://github.com/dgutov/diff-hl"
                :branch "master")
   :hook (magit-post-refresh . diff-hl-magit-post-refresh)
+  :demand t
   :custom
   (global-diff-hl-mode))
 
