@@ -244,11 +244,23 @@
 
 (defun freezeman-shell ()
   (interactive)
-  (run-python (concat (file-name-concat freezeman-project-root "backend" "env" "bin" "python")
-                      " "
-                      (file-name-concat "backend" "manage.py")
-                      " "
-                      "shell")
-              'project
-              t))
+  (let ((default-directory freezeman-project-root))
+    (run-python (concat (file-name-concat freezeman-project-root "backend" "env" "bin" "python")
+                        " "
+                        (file-name-concat "backend" "manage.py")
+                        " "
+                        "shell")
+                nil
+                t)))
 
+;; (defun freezeman-test ()
+;;   (interactive)
+;;   (let* ((backend (file-name-concat freezeman-project-root "backend"))
+;;          (options (split-string (shell-command-to-string (format "cd %s && ./env/bin/pytest --collect-only -q --disable-warnings" backend)) "\n")) ;; TODO: remove garbage options
+;;          (option (completing-read "Select what you want to test! " options))
+;;          (final-command (concat "python manage.py test " option)))
+;;     (async-shell-command
+;;      (concat "cd " backend
+;;              " && . ./env/bin/activate"
+;;              " && " final-command)
+;;      final-command)))
