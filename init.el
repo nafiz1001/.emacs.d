@@ -49,6 +49,10 @@
   (xterm-mouse-mode)
   (put 'upcase-region 'disabled nil))
 
+(if (executable-find "trash-put")
+    (defun system-move-file-to-trash (filename)
+      (call-process "trash-put" nil nil nil filename)))
+
 (defun electric-pair-pairs-for-single-quote ()
   (interactive)
   (setq-local electric-pair-pairs (append electric-pair-pairs '((?' . ?')))))
@@ -146,7 +150,12 @@
 
 (defun artist-mode-init ()
   (setq indent-tabs-mode nil))
+
 (add-hook 'artist-mode-init-hook #'artist-mode-init)
+
+(defun unhighlight-all ()
+  (interactive)
+  (hi-lock-mode -1))
 
 ;; End of Vanilla Configs
 
@@ -181,10 +190,8 @@
 (use-package diff-hl
   :vc (diff-hl :url "https://github.com/dgutov/diff-hl"
                :branch "master")
-  :hook (magit-post-refresh . diff-hl-magit-post-refresh)
-  :demand t
-  :custom
-  (global-diff-hl-mode))
+  :hook ((magit-post-refresh . diff-hl-magit-post-refresh)
+         (text-mode . diff-hl-mode)))
 
 (use-package xclip
   :ensure t
@@ -202,6 +209,7 @@
   :mode "\\.nix\\'")
 
 (use-package rpm-spec-mode
+  :disabled
   :ensure t
   :mode "\\.spec\\'")
 
