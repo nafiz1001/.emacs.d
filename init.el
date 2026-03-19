@@ -144,6 +144,10 @@
   :config
   (editorconfig-mode 1))
 
+(defun artist-mode-init ()
+  (setq indent-tabs-mode nil))
+(add-hook 'artist-mode-init-hook #'artist-mode-init)
+
 ;; End of Vanilla Configs
 
 (use-package citre
