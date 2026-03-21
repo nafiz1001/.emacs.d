@@ -43,11 +43,15 @@
   (electric-pair-mode t)
   (completion-ignore-case t)
   (read-file-name-completion-ignore-case t)
-  (delete-by-moving-to-trash t)
-  :config
-  (global-auto-revert-mode)
-  (xterm-mouse-mode)
-  (put 'upcase-region 'disabled nil))
+  (delete-by-moving-to-trash t))
+
+(global-auto-revert-mode)
+
+(xterm-mouse-mode)
+
+(put 'upcase-region 'disabled nil)
+
+(global-so-long-mode)
 
 (if (executable-find "trash-put")
     (defun system-move-file-to-trash (filename)
@@ -75,17 +79,6 @@
   :ensure t
   :custom
   (wdired-allow-to-change-permissions t))
-
-(use-package diredfl
-  :ensure t
-  :config
-  (diredfl-global-mode))
-
-(use-package dired-preview
-  :disabled
-  :ensure t
-  :config
-  (dired-preview-global-mode 0))
 
 (use-package windmove
   :ensure t
@@ -150,7 +143,6 @@
 
 (defun artist-mode-init ()
   (setq indent-tabs-mode nil))
-
 (add-hook 'artist-mode-init-hook #'artist-mode-init)
 
 (defun unhighlight-all ()
@@ -158,6 +150,17 @@
   (hi-lock-mode -1))
 
 ;; End of Vanilla Configs
+
+(use-package diredfl
+  :ensure t
+  :config
+  (diredfl-global-mode))
+
+(use-package dired-preview
+  :disabled
+  :ensure t
+  :config
+  (dired-preview-global-mode 0))
 
 (use-package citre
   :ensure t
@@ -230,6 +233,9 @@
   :ensure t)
 
 (use-package docker
+  :ensure t)
+
+(use-package vlf
   :ensure t)
 
 (defconst freezeman-project-root "~/projects/freezeman/")
