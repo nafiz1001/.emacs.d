@@ -20,10 +20,12 @@
 
 (use-package emacs
   :ensure t
-  ;; scrolling
   :custom
+  ;; scrolling
   (mouse-wheel-progressive-speed nil)
   (scroll-conservatively 101)
+  ;; echo
+  (auto-revert-verbose nil)
   ;; minibuffer
   (enable-recursive-minibuffers t)
   ;; completion
@@ -31,6 +33,8 @@
   (completions-format 'one-column)
   (icomplete-mode t)
   (read-buffer-completion-ignore-case t)
+  (completion-ignore-case t)
+  (read-file-name-completion-ignore-case t)
   ;; appearance
   (column-number-mode t)
   (custom-enabled-themes '(modus-vivendi))
@@ -41,8 +45,6 @@
   (visible-bell t)
   ;; other
   (electric-pair-mode t)
-  (completion-ignore-case t)
-  (read-file-name-completion-ignore-case t)
   (delete-by-moving-to-trash t))
 
 (global-auto-revert-mode)
@@ -73,7 +75,8 @@
 
 (use-package dired
   :config
-  (put 'dired-find-alternate-file 'disabled nil))
+  (put 'dired-find-alternate-file 'disabled nil)
+  (add-hook 'dired-mode-hook 'auto-revert-mode))
 
 (use-package wdired
   :ensure t
