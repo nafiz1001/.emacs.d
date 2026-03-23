@@ -238,6 +238,9 @@
 (use-package vlf
   :ensure t)
 
+(use-package markdown-mode
+  :ensure t)
+
 (defconst freezeman-project-root "~/projects/freezeman/")
 
 (defun freezeman-backend ()
