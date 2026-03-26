@@ -194,8 +194,9 @@
   :ensure t)
 
 (use-package diff-hl
+  :ensure t
   :vc (diff-hl :url "https://github.com/dgutov/diff-hl"
-               :branch "master")
+               :rev "bb9af85441b0cbb3281268d30256d50f0595ebfe")
   :hook ((magit-post-refresh . diff-hl-magit-post-refresh)
          (text-mode . diff-hl-mode)))
 
@@ -243,6 +244,11 @@
 
 (use-package markdown-mode
   :ensure t)
+
+(use-package wgrep
+  :ensure t
+  :vc (wgrep :url "https://github.com/mhayashi1120/Emacs-wgrep"
+             :rev "49f09ab9b706d2312cab1199e1eeb1bcd3f27f6f"))
 
 (defconst freezeman-project-root "~/projects/freezeman/")
 
