@@ -284,6 +284,10 @@
                 nil
                 t)))
 
+(defun printf ()
+  (interactive)
+  (insert "printf(\"%s\\n\")"))
+
 ;; (defun freezeman-test ()
 ;;   (interactive)
 ;;   (let* ((backend (file-name-concat freezeman-project-root "backend"))
