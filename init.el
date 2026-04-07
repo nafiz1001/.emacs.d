@@ -250,6 +250,10 @@
   :vc (wgrep :url "https://github.com/mhayashi1120/Emacs-wgrep"
              :rev "49f09ab9b706d2312cab1199e1eeb1bcd3f27f6f"))
 
+(use-package hl-todo
+  :ensure t
+  :hook (prog-mode))
+
 (defconst freezeman-project-root "~/projects/freezeman/")
 
 (defun freezeman-backend ()
