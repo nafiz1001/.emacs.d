@@ -62,6 +62,7 @@
 (defun electric-pair-pairs-for-single-quote ()
   (interactive)
   (setq-local electric-pair-pairs (append electric-pair-pairs '((?' . ?')))))
+(add-hook 'python-base-mode-hook #'electric-pair-pairs-for-single-quote)
 
 (use-package tab-bar
   :ensure t
