@@ -1,5 +1,7 @@
 ;; -*- lexical-binding: t -*-
 
+;;; Vanilla Configurations
+
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
 (when (file-exists-p custom-file)
   (load custom-file))
@@ -153,32 +155,27 @@
   (interactive)
   (hi-lock-mode -1))
 
-;; End of Vanilla Configs
+(defun copy-buffer-file-name ()
+  (interactive)
+  (kill-new (buffer-file-name)))
 
+(defun copy-buffer-name ()
+  (interactive)
+  (kill-new (buffer-name)))
+
+;;; Custom Configurations
+
+;; dired font-lock
 (use-package diredfl
   :ensure t
   :config
   (diredfl-global-mode))
 
-(use-package dired-preview
-  :disabled
-  :ensure t
-  :config
-  (dired-preview-global-mode 0))
-
+;; ctags
 (use-package citre
   :ensure t
   :config
   (require 'citre-config))
-
-
-(use-package orderless
-  :disabled
-  :ensure t
-  :custom
-  (completion-styles '(orderless basic))
-  (completion-category-overrides '((file (styles partial-completion))))
-  (completion-pcm-leading-wildcard t)) ;; Emacs 31: partial-completion behaves like substring
 
 (use-package mistty
   :ensure t)
@@ -188,7 +185,7 @@
   :custom
   (treesit-auto-install 'prompt)
   :config
-  (treesit-auto-add-to-auto-mode-alist 'all)
+  (treesit-auto-add-to-auto-mode-alist)
   (global-treesit-auto-mode))
 
 (use-package magit
@@ -197,7 +194,7 @@
 (use-package diff-hl
   :ensure t
   :vc (diff-hl :url "https://github.com/dgutov/diff-hl"
-               :rev "bb9af85441b0cbb3281268d30256d50f0595ebfe")
+               :rev "91fcd4fa42fef895a754e80c4435ae6314be7822")
   :hook ((magit-post-refresh . diff-hl-magit-post-refresh)
          (text-mode . diff-hl-mode)))
 
@@ -209,33 +206,7 @@
 (use-package apheleia
   :ensure t
   :config
-  (apheleia-global-mode +1))
-
-(use-package nix-mode
-  :disabled
-  :ensure t
-  :mode "\\.nix\\'")
-
-(use-package rpm-spec-mode
-  :disabled
-  :ensure t
-  :mode "\\.spec\\'")
-
-(use-package keycast
-  :disabled
-  :ensure t)
-
-(use-package helpful
-  :ensure t
-  :bind (("C-h f" . helpful-callable)
-	 ("C-h v" . helpful-variable)
-	 ("C-h k" . helpful-key)
-	 ("C-h x" . helpful-command)
-	 ("C-c C-d" . helpful-at-point)
-	 ("C-h F" . helpful-function)))
-
-(use-package copilot
-  :ensure t)
+  (apheleia-mode-maybe))
 
 (use-package docker
   :ensure t)
@@ -246,14 +217,14 @@
 (use-package markdown-mode
   :ensure t)
 
-(use-package wgrep
-  :ensure t
-  :vc (wgrep :url "https://github.com/mhayashi1120/Emacs-wgrep"
-             :rev "49f09ab9b706d2312cab1199e1eeb1bcd3f27f6f"))
-
 (use-package hl-todo
   :ensure t
   :hook (prog-mode))
+
+
+;;; Project Specific Configuration
+
+;;;; Freezeman
 
 (defconst freezeman-project-root "~/projects/freezeman/")
 
@@ -264,7 +235,7 @@
       (kill-buffer "python manage.py runserver")))
   (async-shell-command
    (concat "cd " (file-name-concat freezeman-project-root "backend")
-	   " && . ./env/bin/activate"
+	   " && . ./.venv/bin/activate"
 	   " && python manage.py runserver")
    "python manage.py runserver"))
 
@@ -281,26 +252,10 @@
 (defun freezeman-shell ()
   (interactive)
   (let ((default-directory freezeman-project-root))
-    (run-python (concat (file-name-concat freezeman-project-root "backend" "env" "bin" "python")
+    (run-python (concat (file-name-concat freezeman-project-root "backend" ".venv" "bin" "python")
                         " "
                         (file-name-concat "backend" "manage.py")
                         " "
                         "shell")
                 nil
                 t)))
-
-(defun printf ()
-  (interactive)
-  (insert "printf(\"%s\\n\")"))
-
-;; (defun freezeman-test ()
-;;   (interactive)
-;;   (let* ((backend (file-name-concat freezeman-project-root "backend"))
-;;          (options (split-string (shell-command-to-string (format "cd %s && ./env/bin/pytest --collect-only -q --disable-warnings" backend)) "\n")) ;; TODO: remove garbage options
-;;          (option (completing-read "Select what you want to test! " options))
-;;          (final-command (concat "python manage.py test " option)))
-;;     (async-shell-command
-;;      (concat "cd " backend
-;;              " && . ./env/bin/activate"
-;;              " && " final-command)
-;;      final-command)))
