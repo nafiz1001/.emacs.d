@@ -47,24 +47,24 @@
   (visible-bell t)
   ;; other
   (electric-pair-mode t)
-  (delete-by-moving-to-trash t))
+  (delete-by-moving-to-trash t)
+  :config
+  (global-auto-revert-mode)
 
-(global-auto-revert-mode)
+  (xterm-mouse-mode)
 
-(xterm-mouse-mode)
+  (put 'upcase-region 'disabled nil)
 
-(put 'upcase-region 'disabled nil)
+  (global-so-long-mode)
 
-(global-so-long-mode)
+  (if (executable-find "trash-put")
+      (defun system-move-file-to-trash (filename)
+        (call-process "trash-put" nil nil nil filename)))
 
-(if (executable-find "trash-put")
-    (defun system-move-file-to-trash (filename)
-      (call-process "trash-put" nil nil nil filename)))
-
-(defun electric-pair-pairs-for-single-quote ()
-  (interactive)
-  (setq-local electric-pair-pairs (append electric-pair-pairs '((?' . ?')))))
-(add-hook 'python-base-mode-hook #'electric-pair-pairs-for-single-quote)
+  (defun electric-pair-pairs-for-single-quote ()
+    (interactive)
+    (setq-local electric-pair-pairs (append electric-pair-pairs '((?' . ?')))))
+  (add-hook 'python-base-mode-hook #'electric-pair-pairs-for-single-quote))
 
 (use-package tab-bar
   :ensure t
@@ -194,9 +194,11 @@
 (use-package diff-hl
   :ensure t
   :vc (diff-hl :url "https://github.com/dgutov/diff-hl"
-               :rev "91fcd4fa42fef895a754e80c4435ae6314be7822")
+               :rev "3d9552c575fd14ac98ac97bf3c19cdef39f79305")
   :hook ((magit-post-refresh . diff-hl-magit-post-refresh)
-         (text-mode . diff-hl-mode)))
+         (text-mode . diff-hl-mode))
+  :custom
+  (diff-hl-disable-on-remote t))
 
 (use-package xclip
   :ensure t
