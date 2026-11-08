@@ -153,9 +153,10 @@
   :config
   (editorconfig-mode 1))
 
-(defun artist-mode-init ()
+(defun artist-mode-setup ()
   (setq indent-tabs-mode nil))
-(add-hook 'artist-mode-init-hook #'artist-mode-init)
+(use-package artist-mode
+  :hook (artist-mode . artist-mode-setup))
 
 (defun unhighlight-all ()
   (interactive)
