@@ -134,6 +134,8 @@
 
 (use-package tramp
   :ensure t
+  :custom
+  (tramp-use-connection-share nil)
   :config
   ;; configurations for flatpak Emacs
   (if (not (assoc "toolbox" tramp-methods))
@@ -229,16 +231,15 @@
 
 (use-package rust-mode
   :ensure t
-  :init
-  (setq rust-mode-treesitter-derive t))
+  :custom
+  (rust-mode-treesitter-derive t))
 (use-package rustic
   :ensure t
   :after (rust-mode)
   :custom
   (rustic-cargo-use-last-stored-arguments t)
   (rustic-lsp-client 'eglot)
-  :config
-  (setq rustic-format-on-save nil))
+  (rustic-format-on-save nil))
 
 ;;; Project Specific Configuration
 
