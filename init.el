@@ -200,9 +200,10 @@
 (use-package diff-hl
   :ensure t
   :vc (diff-hl :url "https://github.com/dgutov/diff-hl"
-               :rev "3d9552c575fd14ac98ac97bf3c19cdef39f79305")
+               :rev "8dfb5c27ea43b8c7ac1c008bb97090ad4f059285")
   :hook ((magit-post-refresh . diff-hl-magit-post-refresh)
-         (text-mode . diff-hl-mode))
+         (text-mode . diff-hl-mode)
+         (dired-mode . diff-hl-dired-mode))
   :custom
   (diff-hl-disable-on-remote t))
 
