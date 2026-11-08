@@ -59,6 +59,7 @@
 
   (if (executable-find "trash-put")
       (defun system-move-file-to-trash (filename)
+        "used by move-file-to-trash"
         (call-process "trash-put" nil nil nil filename)))
 
   (defun electric-pair-pairs-for-single-quote ()
@@ -126,7 +127,10 @@
 					 (typescript-mode  :language-id "typescript"))
 					.
 					("typescript-language-server" "--stdio")))
-  (add-hook 'eglot-managed-mode-hook #'eglot-visual-line-mode))
+  (add-hook 'eglot-managed-mode-hook #'eglot-visual-line-mode)
+  (set-face-attribute 'eglot-highlight-symbol-face nil
+                      :underline t
+                      :weight 'bold))
 
 (use-package tramp
   :ensure t
@@ -223,6 +227,18 @@
   :ensure t
   :hook (prog-mode))
 
+(use-package rust-mode
+  :ensure t
+  :init
+  (setq rust-mode-treesitter-derive t))
+(use-package rustic
+  :ensure t
+  :after (rust-mode)
+  :custom
+  (rustic-cargo-use-last-stored-arguments t)
+  (rustic-lsp-client 'eglot)
+  :config
+  (setq rustic-format-on-save nil))
 
 ;;; Project Specific Configuration
 
