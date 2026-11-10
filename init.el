@@ -247,7 +247,7 @@
 
 ;;;; Freezeman
 
-(defconst freezeman-project-root "~/projects/freezeman/")
+(defconst freezeman-project-root "~/projects/c3g-workspace/freezeman/")
 
 (defun freezeman-backend ()
   (interactive)
