@@ -54,6 +54,7 @@
   (xterm-mouse-mode)
 
   (put 'upcase-region 'disabled nil)
+  (put 'narrow-to-region 'disabled nil)
 
   (global-so-long-mode)
 
