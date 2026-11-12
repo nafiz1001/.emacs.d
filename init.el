@@ -21,7 +21,7 @@
   (no-littering-theme-backups))
 
 (use-package emacs
-  :ensure t
+  :ensure nil
   :custom
   ;; scrolling
   (mouse-wheel-progressive-speed nil)
@@ -68,34 +68,35 @@
   (add-hook 'python-base-mode-hook #'electric-pair-pairs-for-single-quote))
 
 (use-package tab-bar
-  :ensure t
+  :ensure nil
   :custom
   (tab-bar-mode t))
 
 (use-package proced
-  :ensure t
+  :ensure nil
   :custom
   (proced-show-remote-processes t))
 
 (use-package dired
+  :ensure nil
   :config
   (put 'dired-find-alternate-file 'disabled nil)
   (add-hook 'dired-mode-hook 'auto-revert-mode))
 
 (use-package wdired
-  :ensure t
+  :ensure nil
   :custom
   (wdired-allow-to-change-permissions t))
 
 (use-package windmove
-  :ensure t
+  :ensure nil
   :bind (("C-x <left>"  . windmove-left)
 	 ("C-x <right>" . windmove-right)
 	 ("C-x <up>"    . windmove-up)
 	 ("C-x <down>"  . windmove-down)))
 
 (use-package org
-  :ensure t
+  :ensure nil
   :custom
   (org-directory "~/Documents/Org")
   ;;  (org-capture-templates '(("d"
@@ -109,15 +110,18 @@
   (add-hook 'org-mode-hook #'visual-line-mode))
 
 (use-package xref
-  :ensure t
+  :ensure nil
   :custom
-  (xref-search-program 'ripgrep))
+  (xref-search-program 'ripgrep)
+  :custom-face
+  (xref-file-header ((t (:weight bold :underline t)))))
 
 (defun eglot-visual-line-mode ()
   "Fixes scrolling getting blocked by type hints so long they wrap at the edge of the buffer."
   (when (eglot-managed-p)
     (visual-line-mode)))
 (use-package eglot
+  :ensure nil
   :after (treesit)
   :config
   (add-to-list 'eglot-server-programs `(((js-mode :language-id "javascript")
@@ -133,7 +137,7 @@
                       :weight 'bold))
 
 (use-package tramp
-  :ensure t
+  :ensure nil
   :custom
   (tramp-use-connection-share nil)
   :config
@@ -149,13 +153,14 @@
        tramp-methods)))
 
 (use-package editorconfig
-  :ensure t
+  :ensure nil
   :config
   (editorconfig-mode 1))
 
 (defun artist-mode-setup ()
   (setq indent-tabs-mode nil))
 (use-package artist-mode
+  :ensure nil
   :hook (artist-mode . artist-mode-setup))
 
 (defun unhighlight-all ()
@@ -170,7 +175,7 @@
   (interactive)
   (kill-new (buffer-name)))
 
-;;; Custom Configurations
+;;; External Configurations
 
 ;; dired font-lock
 (use-package diredfl
