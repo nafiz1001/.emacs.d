@@ -178,6 +178,22 @@
 
 ;;; External Configurations
 
+(use-package dashboard
+  :ensure t
+  :config
+  (dashboard-setup-startup-hook)
+
+  ;; Set your startup banner or leave default
+  (setq dashboard-startup-banner 'logo)
+
+  ;; Use built-in project.el (its default switch-function is already project-switch-project)
+  (setq dashboard-projects-backend 'project-el)
+
+  ;; Customize what widgets show up on your home page
+  (setq dashboard-items '((recents   . 5)
+                          (projects  . 10)
+                          (bookmarks . 5))))
+
 ;; dired font-lock
 (use-package diredfl
   :ensure t
