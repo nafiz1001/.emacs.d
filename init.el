@@ -219,6 +219,12 @@
 
 (use-package magit
   :ensure t)
+(use-package project
+  :ensure nil
+  :after (magit)
+  :config
+  (add-to-list 'project-switch-commands '(magit-project-status "Magit" ?m) t)
+  (define-key project-prefix-map "m" #'magit-project-status))
 
 (use-package diff-hl
   :ensure t
