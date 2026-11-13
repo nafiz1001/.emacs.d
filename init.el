@@ -222,7 +222,7 @@
 (use-package apheleia
   :ensure t
   :config
-  (apheleia-mode-maybe))
+  (apheleia-global-mode))
 
 (use-package docker
   :ensure t)
