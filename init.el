@@ -239,8 +239,8 @@
 
 (use-package rust-mode
   :ensure t
-  :custom
-  (rust-mode-treesitter-derive t))
+  :init
+  (setq rust-mode-treesitter-derive t))
 (use-package rustic
   :ensure t
   :after (rust-mode)
