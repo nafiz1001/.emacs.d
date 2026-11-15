@@ -1,6 +1,6 @@
 ;; -*- lexical-binding: t -*-
 
-;;; Vanilla Configurations
+;;; Bootstrap
 
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
 (when (file-exists-p custom-file)
@@ -16,61 +16,138 @@
   :config
   (no-littering-theme-backups))
 
+;;; Core
+
 (use-package emacs
   :ensure nil
   :custom
-  ;; scrolling
   (mouse-wheel-progressive-speed nil)
   (scroll-conservatively 101)
-  ;; echo
-  (auto-revert-verbose nil)
-  ;; minibuffer
-  (enable-recursive-minibuffers t)
-  ;; completion
-  (completion-styles '(basic partial-completion emacs22 substring flex))
-  (completions-sort 'historical)
-  (fido-mode t)
-  (global-completion-preview-mode t)
-  (read-buffer-completion-ignore-case t)
-  (completion-ignore-case t)
-  (read-file-name-completion-ignore-case t)
-  ;; appearance
-  (column-number-mode t)
-  (custom-enabled-themes '(modus-vivendi))
-  (global-display-line-numbers-mode t)
-  (inhibit-startup-screen t)
-  (size-indication-mode t)
-  (tool-bar-mode nil)
-  (visible-bell t)
-  ;; other
-  (electric-pair-mode t)
   (delete-by-moving-to-trash t)
-  (savehist-mode t)
-  (recentf-mode t)
-  (save-place-mode t)
-  (which-key-mode t)
-  (repeat-mode t)
-  (context-menu-mode t)
-  (global-auto-revert-non-file-buffers t)
+  (visible-bell t)
   :config
-  (global-auto-revert-mode)
-
-  (xterm-mouse-mode)
-
   (put 'upcase-region 'disabled nil)
-  (put 'narrow-to-region 'disabled nil)
+  (put 'narrow-to-region 'disabled nil))
 
-  (global-so-long-mode))
+(use-package savehist
+  :ensure nil
+  :custom
+  (savehist-mode t))
+
+(use-package recentf
+  :ensure nil
+  :custom
+  (recentf-mode t))
+
+(use-package saveplace
+  :ensure nil
+  :custom
+  (save-place-mode t))
+
+(use-package autorevert
+  :ensure nil
+  :custom
+  (auto-revert-verbose nil)
+  (global-auto-revert-non-file-buffers t)
+  (global-auto-revert-mode t))
+
+(use-package so-long
+  :ensure nil
+  :custom
+  (global-so-long-mode t))
+
+(use-package repeat
+  :ensure nil
+  :custom
+  (repeat-mode t))
+
+(use-package xt-mouse
+  :ensure nil
+  :custom
+  (xterm-mouse-mode t))
+
+(use-package xclip
+  :ensure t
+  :config
+  (xclip-mode 1))
+
+(use-package artist
+  :ensure nil
+  :hook (artist-mode . (lambda () (setq indent-tabs-mode nil))))
+
+;;; UI
+
+(use-package emacs
+  :ensure nil
+  :custom
+  (custom-enabled-themes '(modus-vivendi))
+  (inhibit-startup-screen t))
+
+(use-package simple
+  :ensure nil
+  :custom
+  (column-number-mode t)
+  (size-indication-mode t))
+
+(use-package display-line-numbers
+  :ensure nil
+  :custom
+  (global-display-line-numbers-mode t))
+
+(use-package tool-bar
+  :ensure nil
+  :custom
+  (tool-bar-mode nil))
 
 (use-package tab-bar
   :ensure nil
   :custom
   (tab-bar-mode t))
 
-(use-package proced
+(use-package which-key
   :ensure nil
   :custom
-  (proced-show-remote-processes t))
+  (which-key-mode t))
+
+(use-package mouse
+  :ensure nil
+  :custom
+  (context-menu-mode t))
+
+(use-package dashboard
+  :ensure t
+  :custom
+  (dashboard-startup-banner 'logo)
+  (dashboard-projects-backend 'project-el)
+  (dashboard-items '((recents   . 5)
+                     (projects  . 10)
+                     (bookmarks . 5)))
+  :config
+  (dashboard-setup-startup-hook))
+
+;;; Completion
+
+(use-package minibuffer
+  :ensure nil
+  :custom
+  (enable-recursive-minibuffers t)
+  (completion-styles '(basic partial-completion emacs22 substring flex))
+  (completions-sort 'historical)
+  (completion-ignore-case t)
+  (read-buffer-completion-ignore-case t)
+  (read-file-name-completion-ignore-case t))
+
+(use-package icomplete
+  :ensure nil
+  :custom
+  (fido-mode t))
+
+(use-package completion-preview
+  :ensure nil
+  :custom
+  (global-completion-preview-mode t))
+
+;;; Files
 
 (use-package dired
   :ensure nil
@@ -88,19 +165,23 @@
   :custom
   (wdired-allow-to-change-permissions t))
 
+;; dired font-lock
+(use-package diredfl
+  :ensure t
+  :config
+  (diredfl-global-mode))
+
+(use-package vlf
+  :ensure t)
+
+;;; Navigation
+
 (use-package windmove
   :ensure nil
   :bind (("C-x <left>"  . windmove-left)
 	 ("C-x <right>" . windmove-right)
 	 ("C-x <up>"    . windmove-up)
 	 ("C-x <down>"  . windmove-down)))
-
-(use-package org
-  :ensure nil
-  :custom
-  (org-directory "~/Documents/Org")
-  :config
-  (add-hook 'org-mode-hook #'visual-line-mode))
 
 (use-package xref
   :ensure nil
@@ -109,99 +190,14 @@
   :custom-face
   (xref-file-header ((t (:weight bold :underline t)))))
 
-(use-package eglot
-  :ensure nil
-  :after (treesit)
-  ;; Inlay hints are overlay strings. If a hint wraps at the window edge,
-  ;; scrolling gets blocked. The display engine handles wrapped overlay
-  ;; strings badly, see:
-  ;; https://debbugs.gnu.org/20847
-  ;; https://debbugs.gnu.org/25246
-  ;; https://debbugs.gnu.org/67470
-  :hook (eglot-managed-mode . visual-line-mode)
-  :config
-  (set-face-attribute 'eglot-highlight-symbol-face nil
-                      :underline t
-                      :weight 'bold))
-
-(use-package tramp
-  :ensure nil
-  :custom
-  (tramp-use-connection-share nil)
-  :config
-  ;; configurations for flatpak Emacs
-  (if (not (assoc "toolbox" tramp-methods))
-      (push
-       (cons
-	"toolbox"
-	'((tramp-login-program "flatpak-spawn --host toolbox")
-	  (tramp-login-args (("enter" "-c") ("%h")))
-	  (tramp-remote-shell "/bin/sh")
-	  (tramp-remote-shell-args ("-i") ("-c"))))
-       tramp-methods)))
-
-(use-package editorconfig
-  :ensure nil
-  :config
-  (editorconfig-mode 1))
-
-(defun artist-mode-setup ()
-  (setq indent-tabs-mode nil))
-(use-package artist-mode
-  :ensure nil
-  :hook (artist-mode . artist-mode-setup))
-
-(defun unhighlight-all ()
-  (interactive)
-  (hi-lock-mode -1))
-
-(defun copy-buffer-file-name ()
-  (interactive)
-  (kill-new (buffer-file-name)))
-
-(defun copy-buffer-name ()
-  (interactive)
-  (kill-new (buffer-name)))
-
-;;; External Configurations
-
-(use-package dashboard
-  :ensure t
-  :custom
-  (dashboard-startup-banner 'logo)
-  (dashboard-projects-backend 'project-el)
-  (dashboard-items '((recents   . 5)
-                     (projects  . 10)
-                     (bookmarks . 5)))
-  :config
-  (dashboard-setup-startup-hook))
-
-;; dired font-lock
-(use-package diredfl
-  :ensure t
-  :config
-  (diredfl-global-mode))
-
-;; ctags
-(use-package citre
-  :ensure t
-  :config
-  (require 'citre-config))
-
-(use-package mistty
-  :ensure t)
-
-(use-package treesit
-  :ensure nil
-  :custom
-  (treesit-enabled-modes t)
-  (treesit-auto-install-grammar 'ask))
+;;; VC and projects
 
 (use-package magit
   :ensure t)
+
+;; magit-project-status is autoloaded, so this does not wait for Magit to load.
 (use-package project
   :ensure nil
-  :after (magit)
   :config
   (add-to-list 'project-switch-commands '(magit-project-status "Magit" ?m) t)
   (define-key project-prefix-map "m" #'magit-project-status))
@@ -219,30 +215,115 @@
   :config
   (global-diff-hl-mode))
 
-(use-package xclip
-  :ensure t
+;;; Programming
+
+(use-package treesit
+  :ensure nil
+  :custom
+  (treesit-enabled-modes t)
+  (treesit-auto-install-grammar 'ask))
+
+(use-package eglot
+  :ensure nil
+  :after (treesit)
+  ;; Inlay hints are overlay strings. If a hint wraps at the window edge,
+  ;; scrolling gets blocked. The display engine handles wrapped overlay
+  ;; strings badly, see:
+  ;; https://debbugs.gnu.org/20847
+  ;; https://debbugs.gnu.org/25246
+  ;; https://debbugs.gnu.org/67470
+  :hook (eglot-managed-mode . visual-line-mode)
+  :custom-face
+  (eglot-highlight-symbol-face ((t (:inherit bold :underline t)))))
+
+(use-package editorconfig
+  :ensure nil
   :config
-  (xclip-mode 1))
+  (editorconfig-mode 1))
 
 (use-package apheleia
   :ensure t
   :config
   (apheleia-global-mode))
 
-(use-package docker
-  :ensure t)
-
-(use-package vlf
-  :ensure t)
-
-(use-package markdown-mode
-  :ensure t)
+;; ctags
+(use-package citre
+  :ensure t
+  :config
+  (require 'citre-config))
 
 (use-package hl-todo
   :ensure t
   :hook (prog-mode))
 
-;;; Project Specific Configuration
+(use-package elec-pair
+  :ensure nil
+  :custom
+  (electric-pair-mode t))
+
+(use-package markdown-mode
+  :ensure t)
+
+(use-package outline
+  :ensure nil
+  :custom
+  (outline-minor-mode-cycle t)
+  (outline-minor-mode-use-buttons 'in-margin)
+  :hook (emacs-lisp-mode . outline-minor-mode))
+
+;;; Remote and shells
+
+(use-package tramp
+  :ensure nil
+  :custom
+  (tramp-use-connection-share nil)
+  :config
+  ;; configurations for flatpak Emacs
+  (if (not (assoc "toolbox" tramp-methods))
+      (push
+       (cons
+	"toolbox"
+	'((tramp-login-program "flatpak-spawn --host toolbox")
+	  (tramp-login-args (("enter" "-c") ("%h")))
+	  (tramp-remote-shell "/bin/sh")
+	  (tramp-remote-shell-args ("-i") ("-c"))))
+       tramp-methods)))
+
+(use-package proced
+  :ensure nil
+  :custom
+  (proced-show-remote-processes t))
+
+(use-package mistty
+  :ensure t)
+
+(use-package docker
+  :ensure t)
+
+;;; Org
+
+(use-package org
+  :ensure nil
+  :custom
+  (org-directory "~/Documents/Org")
+  :config
+  (add-hook 'org-mode-hook #'visual-line-mode))
+
+;;; Commands
+
+(defun unhighlight-all ()
+  (interactive)
+  (hi-lock-mode -1))
+
+(defun copy-buffer-file-name ()
+  (interactive)
+  (kill-new (buffer-file-name)))
+
+(defun copy-buffer-name ()
+  (interactive)
+  (kill-new (buffer-name)))
+
+;;; Projects
 
 ;;;; Freezeman
 
