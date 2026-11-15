@@ -8,8 +8,8 @@
 
 (require 'package)
 (setopt package-archives '(("gnu" . "https://elpa.gnu.org/packages/")
-			   ("nongnu" . "https://elpa.nongnu.org/nongnu/")
-			   ("melpa" . "https://melpa.org/packages/")))
+			               ("nongnu" . "https://elpa.nongnu.org/nongnu/")
+			               ("melpa" . "https://melpa.org/packages/")))
 
 (use-package no-littering
   :ensure t
@@ -179,9 +179,9 @@
 (use-package windmove
   :ensure nil
   :bind (("C-x <left>"  . windmove-left)
-	 ("C-x <right>" . windmove-right)
-	 ("C-x <up>"    . windmove-up)
-	 ("C-x <down>"  . windmove-down)))
+	     ("C-x <right>" . windmove-right)
+	     ("C-x <up>"    . windmove-up)
+	     ("C-x <down>"  . windmove-down)))
 
 (use-package xref
   :ensure nil
@@ -217,6 +217,154 @@
 
 ;;; Programming
 
+;;;; Indentation
+
+;; Precedence: .editorconfig and file variables, then dtrt-indent
+;; detection, then the default offset of the major mode.
+(use-package emacs
+  :ensure nil
+  :custom
+  (indent-tabs-mode nil)
+  (tab-width 4))
+
+;; editorconfig.el loads later in this file, so declare the variable for
+;; the byte compiler.
+(defvar editorconfig-indent-size-vars)
+
+(defun buffer-indentation-vars (size)
+  "Return (VAR . SIZE) pairs that set the indent step of this major mode.
+Use the same mapping as `.editorconfig' `indent_size'."
+  (require 'editorconfig)
+  ;; The mapping can return `eval' forms and variables of packages that
+  ;; are not installed, for example `py-indent-offset' of python-mode.el.
+  (seq-filter (lambda (pair) (and (symbolp (car pair))
+                                  (not (eq (car pair) 'eval))
+                                  (boundp (car pair))))
+              (if (functionp editorconfig-indent-size-vars)
+                  (funcall editorconfig-indent-size-vars size)
+                (mapcar (lambda (var) (cons var size))
+                        editorconfig-indent-size-vars))))
+
+(defun buffer-indentation-size ()
+  "Return the indent step of the current buffer."
+  (if indent-tabs-mode
+      tab-width
+    (or (seq-some (lambda (pair)
+                    (let ((value (symbol-value (car pair))))
+                      (and (natnump value) value)))
+                  (buffer-indentation-vars 1))
+        standard-indent)))
+
+(defun set-buffer-indentation (style size &optional convert)
+  "Indent the current buffer with STYLE (\"Spaces\" or \"Tabs\") of SIZE.
+With a prefix argument CONVERT, also convert the leading whitespace."
+  (interactive
+   (list (completing-read "Indent using: " '("Spaces" "Tabs") nil t nil nil
+                          (if indent-tabs-mode "Tabs" "Spaces"))
+         (read-number "Size: " (buffer-indentation-size))
+         current-prefix-arg))
+  (let ((tabs (equal style "Tabs"))
+        (vars (buffer-indentation-vars size)))
+    (setq-local indent-tabs-mode tabs
+                tab-width size
+                standard-indent size)
+    (pcase-dolist (`(,var . ,value) vars)
+      (set (make-local-variable var) value))
+    (when convert
+      ;; tabify.el is not loaded yet, so declare the variable dynamic here.
+      (defvar tabify-regexp)
+      ;; The default regexp also matches whitespace after code.
+      (let ((tabify-regexp "^\t* [ \t]+"))
+        (if tabs
+            (tabify (point-min) (point-max))
+          (untabify (point-min) (point-max)))))
+    (force-mode-line-update)
+    (message "%s: %d (%s)" style size
+             (mapconcat (lambda (pair) (symbol-name (car pair))) vars ", "))))
+
+(add-to-list 'mode-line-misc-info
+             '(:eval
+               (when (derived-mode-p 'prog-mode 'text-mode)
+                 (propertize
+                  (format "%s: %d " (if indent-tabs-mode "Tabs" "Spaces")
+                          (buffer-indentation-size))
+                  'mouse-face 'mode-line-highlight
+                  'help-echo "mouse-1: Set indentation"
+                  'local-map (make-mode-line-mouse-map
+                              'mouse-1 #'set-buffer-indentation)))))
+
+(use-package dtrt-indent
+  :ensure t
+  :custom
+  (dtrt-indent-lighter nil)
+  (dtrt-indent-verbosity 0)
+  ;; bash-ts-mode sets up SMIE, so dtrt-indent skips it without this.
+  (dtrt-indent-run-after-smie t)
+  :config
+  ;; dtrt-indent has no entry for yaml-ts-mode.
+  (add-to-list 'dtrt-indent-hook-mapping-list
+               '(yaml-ts-mode default yaml-indent-offset))
+  ;; Let .editorconfig and file variables win over detection.
+  ;; dtrt-indent misses two cases:
+  ;; 1. It compares variable names, so an obsolete alias such as
+  ;;    `rust-ts-mode-indent-offset' does not match the real
+  ;;    `rust-ts-indent-offset' that editorconfig sets.
+  ;; 2. It records `dtrt-indent-explicit-tab-mode' but never reads it.
+  ;;
+  ;; After each dtrt-indent upgrade, test if this advice is still necessary:
+  ;; 1. Make a directory with this .editorconfig:
+  ;;      root = true
+  ;;      [*]
+  ;;      indent_style = tab
+  ;;      indent_size = 8
+  ;; 2. In that directory, make a .rs file with 2-space indentation and
+  ;;    two or more blocks.
+  ;; 3. Remove the advice for this session. Type M-: and evaluate:
+  ;;      (advice-remove 'dtrt-indent-try-set-offset
+  ;;                     'dtrt-indent-try-set-offset@respect-local-vars)
+  ;; 4. If the .rs file is open, kill its buffer.
+  ;; 5. Open the .rs file.
+  ;; 6. Type C-h v rust-ts-indent-offset. If the value is 8, case 1 is fixed.
+  ;; 7. Type C-h v indent-tabs-mode. If the value is t, case 2 is fixed.
+  ;; 8. If case 1 is fixed, remove the `offset-set-by-local-vars' code.
+  ;; 9. If case 2 is fixed, remove the `tabs' code.
+  ;; 10. If both cases are fixed, remove this advice and this comment.
+  (define-advice dtrt-indent-try-set-offset (:around (orig) respect-local-vars)
+    (let* ((offset-var (nth 2 (dtrt-indent--search-hook-mapping major-mode)))
+           (tabs indent-tabs-mode)
+           (offset-set-by-local-vars
+            (seq-some (lambda (pair)
+                        (eq (indirect-variable (car pair))
+                            (indirect-variable offset-var)))
+                      file-local-variables-alist)))
+      (when (and offset-var offset-set-by-local-vars)
+        (setq dtrt-indent-explicit-offset t))
+      (prog1 (funcall orig)
+        (when dtrt-indent-explicit-tab-mode
+          (setq-local indent-tabs-mode tabs)))))
+  (dtrt-indent-global-mode 1))
+
+;; Detection does not find the brace style. The default GNU style indents
+;; a brace on its own line one extra level.
+(use-package c-ts-mode
+  :ensure nil
+  :defer t
+  :custom
+  ;; In c-ts-mode, k&r and linux also indent a brace on its own line one
+  ;; extra level. bsd does not, and it keeps K&R code unchanged.
+  (c-ts-mode-indent-style 'bsd))
+
+(use-package cc-mode
+  :ensure nil
+  :defer t
+  :custom
+  ;; In CC mode, "k&r" sets `c-basic-offset' to 5. "stroustrup" uses 4.
+  (c-default-style '((java-mode . "java")
+                     (awk-mode . "awk")
+                     (other . "stroustrup"))))
+
+;;;; Other
+
 (use-package treesit
   :ensure nil
   :custom
@@ -241,6 +389,9 @@
 (use-package editorconfig
   :ensure nil
   :config
+  ;; The default maps json-ts-mode to js-indent-level, which it ignores.
+  (add-to-list 'editorconfig-indentation-alist
+               '(json-ts-mode json-ts-indent-offset))
   (editorconfig-mode 1))
 
 (use-package apheleia
@@ -284,11 +435,11 @@
   (if (not (assoc "toolbox" tramp-methods))
       (push
        (cons
-	"toolbox"
-	'((tramp-login-program "flatpak-spawn --host toolbox")
-	  (tramp-login-args (("enter" "-c") ("%h")))
-	  (tramp-remote-shell "/bin/sh")
-	  (tramp-remote-shell-args ("-i") ("-c"))))
+	    "toolbox"
+	    '((tramp-login-program "flatpak-spawn --host toolbox")
+	      (tramp-login-args (("enter" "-c") ("%h")))
+	      (tramp-remote-shell "/bin/sh")
+	      (tramp-remote-shell-args ("-i") ("-c"))))
        tramp-methods)))
 
 (use-package proced
@@ -338,8 +489,8 @@
       (kill-buffer "python manage.py runserver")))
   (async-shell-command
    (concat "cd " (file-name-concat freezeman-project-root "backend")
-	   " && . ./.venv/bin/activate"
-	   " && python manage.py runserver")
+	       " && . ./.venv/bin/activate"
+	       " && python manage.py runserver")
    "python manage.py runserver"))
 
 (defun freezeman-frontend ()
@@ -349,7 +500,7 @@
       (kill-buffer "npm start")))
   (async-shell-command
    (concat "cd " (file-name-concat freezeman-project-root "frontend")
-	   " && npm start")
+	       " && npm start")
    "npm start"))
 
 (defun freezeman-shell ()
