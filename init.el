@@ -29,7 +29,7 @@
   ;; completion
   (completion-styles '(basic partial-completion emacs22 substring flex))
   (completions-sort 'historical)
-  (fido-vertical-mode t)
+  (fido-mode t)
   (global-completion-preview-mode t)
   (read-buffer-completion-ignore-case t)
   (completion-ignore-case t)
@@ -51,7 +51,6 @@
   (which-key-mode t)
   (repeat-mode t)
   (context-menu-mode t)
-  (pixel-scroll-precision-mode t)
   (global-auto-revert-non-file-buffers t)
   :config
   (global-auto-revert-mode)
@@ -110,15 +109,17 @@
   :custom-face
   (xref-file-header ((t (:weight bold :underline t)))))
 
-(defun eglot-visual-line-mode ()
-  "Fixes scrolling getting blocked by type hints so long they wrap at the edge of the buffer."
-  (when (eglot-managed-p)
-    (visual-line-mode)))
 (use-package eglot
   :ensure nil
   :after (treesit)
+  ;; Inlay hints are overlay strings. If a hint wraps at the window edge,
+  ;; scrolling gets blocked. The display engine handles wrapped overlay
+  ;; strings badly, see:
+  ;; https://debbugs.gnu.org/20847
+  ;; https://debbugs.gnu.org/25246
+  ;; https://debbugs.gnu.org/67470
+  :hook (eglot-managed-mode . visual-line-mode)
   :config
-  (add-hook 'eglot-managed-mode-hook #'eglot-visual-line-mode)
   (set-face-attribute 'eglot-highlight-symbol-face nil
                       :underline t
                       :weight 'bold))
