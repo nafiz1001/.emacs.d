@@ -11,10 +11,6 @@
 			   ("nongnu" . "https://elpa.nongnu.org/nongnu/")
 			   ("melpa" . "https://melpa.org/packages/")))
 
-(unless (package-installed-p 'vc-use-package)
-  (package-vc-install "https://github.com/slotThe/vc-use-package"))
-(require 'vc-use-package)
-
 (use-package no-littering
   :ensure t
   :config
@@ -31,9 +27,10 @@
   ;; minibuffer
   (enable-recursive-minibuffers t)
   ;; completion
-  (completion-styles '(basic partial-completion emacs22 substring))
-  (completions-format 'one-column)
-  (icomplete-mode t)
+  (completion-styles '(basic partial-completion emacs22 substring flex))
+  (completions-sort 'historical)
+  (fido-vertical-mode t)
+  (global-completion-preview-mode t)
   (read-buffer-completion-ignore-case t)
   (completion-ignore-case t)
   (read-file-name-completion-ignore-case t)
@@ -48,6 +45,14 @@
   ;; other
   (electric-pair-mode t)
   (delete-by-moving-to-trash t)
+  (savehist-mode t)
+  (recentf-mode t)
+  (save-place-mode t)
+  (which-key-mode t)
+  (repeat-mode t)
+  (context-menu-mode t)
+  (pixel-scroll-precision-mode t)
+  (global-auto-revert-non-file-buffers t)
   :config
   (global-auto-revert-mode)
 
@@ -56,17 +61,7 @@
   (put 'upcase-region 'disabled nil)
   (put 'narrow-to-region 'disabled nil)
 
-  (global-so-long-mode)
-
-  (if (executable-find "trash-put")
-      (defun system-move-file-to-trash (filename)
-        "used by move-file-to-trash"
-        (call-process "trash-put" nil nil nil filename)))
-
-  (defun electric-pair-pairs-for-single-quote ()
-    (interactive)
-    (setq-local electric-pair-pairs (append electric-pair-pairs '((?' . ?')))))
-  (add-hook 'python-base-mode-hook #'electric-pair-pairs-for-single-quote))
+  (global-so-long-mode))
 
 (use-package tab-bar
   :ensure nil
@@ -80,9 +75,14 @@
 
 (use-package dired
   :ensure nil
+  :custom
+  (dired-dwim-target t)
+  (dired-listing-switches "-alh --group-directories-first")
+  (dired-kill-when-opening-new-dired-buffer t)
+  :bind (:map dired-mode-map
+              ("W" . (lambda () (interactive) (dired-copy-filename-as-kill 0))))
   :config
-  (put 'dired-find-alternate-file 'disabled nil)
-  (add-hook 'dired-mode-hook 'auto-revert-mode))
+  (put 'dired-find-alternate-file 'disabled nil))
 
 (use-package wdired
   :ensure nil
@@ -100,13 +100,6 @@
   :ensure nil
   :custom
   (org-directory "~/Documents/Org")
-  ;;  (org-capture-templates '(("d"
-  ;;			    "Diary/Journalling"
-  ;;			    item
-  ;;			    (file+headline (lambda () (expand-file-name (concat org-directory "/Diary/" (format-time-string "%Y-%m-%d.org"))))
-  ;;					   (lambda () (format-time-string (org-time-stamp-format t t) (current-time))))
-  ;;			    "- %?"
-  ;;			    :empty-lines 0)))
   :config
   (add-hook 'org-mode-hook #'visual-line-mode))
 
@@ -125,13 +118,6 @@
   :ensure nil
   :after (treesit)
   :config
-  (add-to-list 'eglot-server-programs `(((js-mode :language-id "javascript")
-                                         (js-ts-mode :language-id "javascript")
-					 (tsx-ts-mode  :language-id "typescriptreact")
-					 (typescript-ts-mode :language-id "typescript")
-					 (typescript-mode  :language-id "typescript"))
-					.
-					("typescript-language-server" "--stdio")))
   (add-hook 'eglot-managed-mode-hook #'eglot-visual-line-mode)
   (set-face-attribute 'eglot-highlight-symbol-face nil
                       :underline t
@@ -180,19 +166,14 @@
 
 (use-package dashboard
   :ensure t
+  :custom
+  (dashboard-startup-banner 'logo)
+  (dashboard-projects-backend 'project-el)
+  (dashboard-items '((recents   . 5)
+                     (projects  . 10)
+                     (bookmarks . 5)))
   :config
-  (dashboard-setup-startup-hook)
-
-  ;; Set your startup banner or leave default
-  (setq dashboard-startup-banner 'logo)
-
-  ;; Use built-in project.el (its default switch-function is already project-switch-project)
-  (setq dashboard-projects-backend 'project-el)
-
-  ;; Customize what widgets show up on your home page
-  (setq dashboard-items '((recents   . 5)
-                          (projects  . 10)
-                          (bookmarks . 5))))
+  (dashboard-setup-startup-hook))
 
 ;; dired font-lock
 (use-package diredfl
@@ -209,13 +190,11 @@
 (use-package mistty
   :ensure t)
 
-(use-package treesit-auto
-  :ensure t
+(use-package treesit
+  :ensure nil
   :custom
-  (treesit-auto-install 'prompt)
-  :config
-  (treesit-auto-add-to-auto-mode-alist)
-  (global-treesit-auto-mode))
+  (treesit-enabled-modes t)
+  (treesit-auto-install-grammar 'ask))
 
 (use-package magit
   :ensure t)
@@ -230,11 +209,14 @@
   :ensure t
   :vc (diff-hl :url "https://github.com/dgutov/diff-hl"
                :rev "8dfb5c27ea43b8c7ac1c008bb97090ad4f059285")
+  ;; :hook defers loading, but global-diff-hl-mode must start at init.
+  :demand t
   :hook ((magit-post-refresh . diff-hl-magit-post-refresh)
-         (text-mode . diff-hl-mode)
          (dired-mode . diff-hl-dired-mode))
   :custom
-  (diff-hl-disable-on-remote t))
+  (diff-hl-disable-on-remote t)
+  :config
+  (global-diff-hl-mode))
 
 (use-package xclip
   :ensure t
@@ -258,20 +240,6 @@
 (use-package hl-todo
   :ensure t
   :hook (prog-mode))
-
-(use-package rust-mode
-  :ensure t
-  :custom
-  (rust-mode-treesitter-derive t))
-
-(use-package rustic
-  :disabled
-  :ensure t
-  :after (rust-mode)
-  :custom
-  (rustic-cargo-use-last-stored-arguments t)
-  (rustic-lsp-client 'eglot)
-  (rustic-format-on-save nil))
 
 ;;; Project Specific Configuration
 
