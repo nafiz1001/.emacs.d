@@ -233,8 +233,10 @@
   ;; https://debbugs.gnu.org/25246
   ;; https://debbugs.gnu.org/67470
   :hook (eglot-managed-mode . visual-line-mode)
-  :custom-face
-  (eglot-highlight-symbol-face ((t (:inherit bold :underline t)))))
+  :config
+  ;; :custom-face only sets the defface spec, and the modus theme spec wins over it.
+  (custom-set-faces
+   '(eglot-highlight-symbol-face ((t (:inherit bold :underline t))))))
 
 (use-package editorconfig
   :ensure nil
