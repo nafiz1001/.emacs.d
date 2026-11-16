@@ -56,3 +56,5 @@ var/
 eln-cache/
 projects
 custom.el
+history
+recentf.eld
