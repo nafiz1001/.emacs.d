@@ -286,7 +286,7 @@ With a prefix argument CONVERT, also convert the leading whitespace."
              '(:eval
                (when (derived-mode-p 'prog-mode 'text-mode)
                  (propertize
-                  (format "%s: %d " (if indent-tabs-mode "Tabs" "Spaces")
+                  (format "%s:%d " (if indent-tabs-mode "Tabs" "Spaces")
                           (buffer-indentation-size))
                   'mouse-face 'mode-line-highlight
                   'help-echo "mouse-1: Set indentation"
