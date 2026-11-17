@@ -420,10 +420,7 @@ With a prefix argument CONVERT, also convert the leading whitespace."
 ;; This block comes after markdown-mode, so its .md entry wins.
 (use-package markdown-ts-mode
   :ensure nil
-  :mode "\\.md\\'"
-  ;; Open rendered. C-c C-x C-m (markdown-ts-toggle-hide-markup) shows the raw source.
-  :custom
-  (markdown-ts-hide-markup t))
+  :mode "\\.md\\'")
 
 (use-package outline
   :ensure nil
