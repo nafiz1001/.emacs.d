@@ -463,6 +463,27 @@ With a prefix argument CONVERT, also convert the leading whitespace."
      '(:application tramp :protocol "podman")
      'tramp-podman-own-path)))
 
+(use-package simple
+  :ensure nil
+  :config
+  ;; Several commands share "*Async Shell Command*" or
+  ;; "*Shell Command Output*".  Name the output buffer after the
+  ;; command.  Change only interactive calls, because many Lisp callers
+  ;; run `shell-command' with no output buffer and would each leave a
+  ;; buffer.
+  (defun shell-command-name-output-buffer (args)
+    (interactive
+     (lambda (spec)
+       (let ((interactive-args (advice-eval-interactive-spec spec)))
+         (pcase-let ((`(,command ,output-buffer . ,rest) interactive-args))
+           (if output-buffer
+               interactive-args
+             (let ((buffer-name (format "*%s*" command)))
+               `(,command ,buffer-name ,@rest)))))))
+    args)
+  (advice-add 'shell-command :filter-args #'shell-command-name-output-buffer)
+  (advice-add 'async-shell-command :filter-args #'shell-command-name-output-buffer))
+
 (use-package proced
   :ensure nil
   :custom
