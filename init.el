@@ -445,7 +445,16 @@ With a prefix argument CONVERT, also convert the leading whitespace."
 	      (tramp-login-args (("enter" "-c") ("%h")))
 	      (tramp-remote-shell "/bin/sh")
 	      (tramp-remote-shell-args ("-i") ("-c"))))
-       tramp-methods)))
+       tramp-methods))
+  ;; TRAMP replaces the remote PATH with `tramp-remote-path', so a container
+  ;; loses PATH entries of its image, such as a venv. Read the PATH of a
+  ;; login shell in podman containers only.
+  (let* ((own-path (cons 'tramp-own-remote-path tramp-remote-path))
+         (variables `((tramp-remote-path . ,own-path))))
+    (connection-local-set-profile-variables 'tramp-podman-own-path variables)
+    (connection-local-set-profiles
+     '(:application tramp :protocol "podman")
+     'tramp-podman-own-path)))
 
 (use-package proced
   :ensure nil
