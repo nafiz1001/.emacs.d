@@ -286,7 +286,7 @@ With a prefix argument CONVERT, also convert the leading whitespace."
              '(:eval
                (when (derived-mode-p 'prog-mode 'text-mode)
                  (propertize
-                  (format "%s: %d " (if indent-tabs-mode "Tabs" "Spaces")
+                  (format "%s:%d " (if indent-tabs-mode "Tabs" "Spaces")
                           (buffer-indentation-size))
                   'mouse-face 'mode-line-highlight
                   'help-echo "mouse-1: Set indentation"
@@ -301,9 +301,6 @@ With a prefix argument CONVERT, also convert the leading whitespace."
   ;; bash-ts-mode sets up SMIE, so dtrt-indent skips it without this.
   (dtrt-indent-run-after-smie t)
   :config
-  ;; dtrt-indent has no entry for yaml-ts-mode.
-  (add-to-list 'dtrt-indent-hook-mapping-list
-               '(yaml-ts-mode default yaml-indent-offset))
   ;; Let .editorconfig and file variables win over detection.
   ;; dtrt-indent misses two cases:
   ;; 1. It compares variable names, so an obsolete alias such as
