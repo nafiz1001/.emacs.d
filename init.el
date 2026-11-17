@@ -142,14 +142,6 @@
   :custom
   (fido-mode t))
 
-(use-package completion-preview
-  :ensure nil
-  :custom
-  ;; With no delay, the preview runs completion-at-point on each keystroke.
-  ;; In Eglot buffers that is a synchronous LSP request, so typing lags.
-  (completion-preview-idle-delay 0.2)
-  (global-completion-preview-mode t))
-
 ;;; Files
 
 (use-package dired
