@@ -200,7 +200,14 @@
   :ensure nil
   :config
   (add-to-list 'project-switch-commands '(magit-project-status "Magit" ?m) t)
-  (define-key project-prefix-map "m" #'magit-project-status))
+  (define-key project-prefix-map "m" #'magit-project-status)
+  ;; project-buffers expands the default-directory of every buffer.  For
+  ;; a stale TRAMP buffer, such as one for "/podman::", TRAMP opens a
+  ;; new connection, which fails if the host does not exist.  With
+  ;; non-essential, TRAMP uses only connections that are already open.
+  (cl-defmethod project-buffers :around (_project)
+    (let ((non-essential t))
+      (cl-call-next-method))))
 
 (use-package diff-hl
   :ensure t
