@@ -411,8 +411,21 @@ With a prefix argument CONVERT, also convert the leading whitespace."
   :custom
   (electric-pair-mode t))
 
+;; Eglot renders LSP documentation with gfm-view-mode from markdown-mode.
+;; Without it, Eglot shows raw markdown in text-mode.
 (use-package markdown-mode
   :ensure t)
+
+;; markdown-ts-mode does not add itself to auto-mode-alist.
+;; This block comes after markdown-mode, so its .md entry wins.
+(use-package markdown-ts-mode
+  :ensure nil
+  :mode "\\.md\\'")
+
+(use-package markdown-ts-appear
+  :vc (:url "https://github.com/Thysrael/markdown-ts-appear"
+       :rev :newest)
+  :hook (markdown-ts-mode . markdown-ts-appear-mode))
 
 (use-package outline
   :ensure nil
