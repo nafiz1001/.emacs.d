@@ -520,7 +520,8 @@ With a prefix argument CONVERT, also convert the leading whitespace."
   ;; "*Shell Command Output*".  Name the output buffer after the
   ;; command.  Change only interactive calls, because many Lisp callers
   ;; run `shell-command' with no output buffer and would each leave a
-  ;; buffer.
+  ;; buffer.  A remote command gets the TRAMP prefix in the name, so the
+  ;; buffer shows where the command runs.
   (defun shell-command-name-output-buffer (args)
     (interactive
      (lambda (spec)
@@ -528,7 +529,10 @@ With a prefix argument CONVERT, also convert the leading whitespace."
          (pcase-let ((`(,command ,output-buffer . ,rest) interactive-args))
            (if output-buffer
                interactive-args
-             (let ((buffer-name (format "*%s*" command)))
+             (let* ((remote (file-remote-p default-directory))
+                    (buffer-name (if remote
+                                     (format "*%s* @ %s" command remote)
+                                   (format "*%s*" command))))
                `(,command ,buffer-name ,@rest)))))))
     args)
   (advice-add 'shell-command :filter-args #'shell-command-name-output-buffer)
