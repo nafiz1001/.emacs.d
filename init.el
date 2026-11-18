@@ -434,7 +434,16 @@ With a prefix argument CONVERT, also convert the leading whitespace."
   :custom
   (outline-minor-mode-cycle t)
   (outline-minor-mode-use-buttons 'in-margin)
-  :hook (emacs-lisp-mode . outline-minor-mode))
+  :hook ((emacs-lisp-mode . outline-minor-mode)
+         ;; Only tree-sitter modes with headings set these variables.
+         ;; treesit-major-mode-setup sets the search function. Some
+         ;; modes, such as python-ts-mode, set their own regexp instead.
+         (after-change-major-mode
+          . (lambda ()
+              (when (and (treesit-parser-list)
+                         (seq-some #'local-variable-p
+                                   '(outline-search-function outline-regexp)))
+                (outline-minor-mode 1))))))
 
 ;;; Remote and shells
 
