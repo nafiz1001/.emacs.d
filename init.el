@@ -367,6 +367,20 @@ With a prefix argument CONVERT, also convert the leading whitespace."
                      (awk-mode . "awk")
                      (other . "stroustrup"))))
 
+(use-package python
+  :ensure nil
+  ;; python-ts-mode enables node-based `sexp' navigation. Then
+  ;; `backward-sexp' after a closing paren that ends a method moves to
+  ;; the `def', not to the matching paren. Use list-based navigation,
+  ;; which is the treesit default. The hook sets the same values as
+  ;; `treesit-cycle-sexp-thing' gives in list mode. It does not call
+  ;; that command, because the command toggles, so a later change of
+  ;; the python-ts-mode default would flip the result.
+  :hook (python-ts-mode . (lambda ()
+                            (setq-local treesit-sexp-thing nil
+                                        forward-sexp-function
+                                        #'treesit-forward-sexp-list))))
+
 ;;;; Other
 
 (use-package treesit
