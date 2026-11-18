@@ -122,6 +122,11 @@
   (dashboard-items '((recents   . 5)
                      (projects  . 10)
                      (bookmarks . 5)))
+  ;; `dashboard-setup-startup-hook' skips `emacs --daemon', so client
+  ;; frames need this to show the dashboard.
+  (initial-buffer-choice (lambda ()
+                           (dashboard-open)
+                           (get-buffer dashboard-buffer-name)))
   :config
   (dashboard-setup-startup-hook))
 
