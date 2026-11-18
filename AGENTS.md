@@ -2,6 +2,10 @@
 
 Emacs configuration (`early-init.el`, `init.el`).
 
+## Running daemon
+The user sometimes runs an Emacs daemon.
+- If a daemon runs, ask before you load config changes, make temporary changes or run tests in it. Tests in the daemon help diagnose issues the user sees.
+
 ## Emacs Lisp
 - If an argument of a function call is a function call, bind that argument to a name with `let` or `let*`. Then pass the name.
 - These forms are exempt. Their arguments can be function calls:
