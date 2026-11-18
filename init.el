@@ -11,6 +11,9 @@
 			               ("nongnu" . "https://elpa.nongnu.org/nongnu/")
 			               ("melpa" . "https://melpa.org/packages/")))
 
+;; Must be set before use-package loads. Adds a "Packages" group to imenu.
+(setopt use-package-enable-imenu-support t)
+
 (use-package no-littering
   :ensure t
   :config
@@ -402,7 +405,13 @@ With a prefix argument CONVERT, also convert the leading whitespace."
   :config
   ;; :custom-face only sets the defface spec, and the modus theme spec wins over it.
   (custom-set-faces
-   '(eglot-highlight-symbol-face ((t (:inherit bold :underline t))))))
+   '(eglot-highlight-symbol-face ((t (:inherit bold :underline t)))))
+  ;; Eglot's imenu index drops the position of a symbol that has
+  ;; children, so imenu cannot jump to a class or function signature.
+  ;; The tree-sitter index keeps it. Cost: imenu loses LSP-only
+  ;; symbols, such as local variables, and symbol kinds from the server.
+  ;; In modes without tree-sitter, imenu uses the major mode's own index.
+  (add-to-list 'eglot-stay-out-of 'imenu))
 
 (use-package editorconfig
   :ensure nil
@@ -458,6 +467,14 @@ With a prefix argument CONVERT, also convert the leading whitespace."
                          (seq-some #'local-variable-p
                                    '(outline-search-function outline-regexp)))
                 (outline-minor-mode 1))))))
+
+(use-package lisp-mode
+  :ensure nil
+  :config
+  ;; Lists ;;; and ;;;; outline headings in imenu as a flat group.
+  ;; The space after the semicolons skips ;;;###autoload.
+  (add-to-list 'lisp-imenu-generic-expression
+               '("Sections" "^;;;+ \\(.+\\)$" 1)))
 
 ;;; Remote and shells
 
