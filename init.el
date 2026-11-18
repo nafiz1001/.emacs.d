@@ -413,6 +413,16 @@ With a prefix argument CONVERT, also convert the leading whitespace."
   ;; In modes without tree-sitter, imenu uses the major mode's own index.
   (add-to-list 'eglot-stay-out-of 'imenu))
 
+;; DAP client in the style of Eglot. The key prefix is C-x C-a, as in gud.
+(use-package dape
+  :ensure t
+  :custom
+  ;; Source on the left and info buffers on the right, as in `gdb-many-windows'.
+  (dape-buffer-window-arrangement 'gud)
+  :config
+  ;; Toggle breakpoints with a mouse click in the left fringe or margin.
+  (dape-breakpoint-global-mode 1))
+
 (use-package editorconfig
   :ensure nil
   :config
