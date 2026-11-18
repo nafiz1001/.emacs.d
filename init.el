@@ -513,6 +513,23 @@ With a prefix argument CONVERT, also convert the leading whitespace."
      '(:application tramp :protocol "podman")
      'tramp-podman-own-path)))
 
+(use-package comint
+  :ensure nil
+  :custom
+  (comint-buffer-maximum-size 10000)
+  :config
+  ;; Shell buffers grow with no limit. Keep only the last lines.
+  (add-hook 'comint-output-filter-functions #'comint-truncate-buffer))
+
+;; `esh-mode' defines both variables, and `eshell' does not load it.
+(use-package esh-mode
+  :ensure nil
+  :custom
+  (eshell-buffer-maximum-lines 10000)
+  :config
+  ;; Eshell buffers grow with no limit. Keep only the last lines.
+  (add-hook 'eshell-output-filter-functions #'eshell-truncate-buffer))
+
 (use-package simple
   :ensure nil
   :config
