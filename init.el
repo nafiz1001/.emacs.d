@@ -507,8 +507,7 @@ With a prefix argument CONVERT, also convert the leading whitespace."
   :ensure nil
   :custom
   (org-directory "~/Documents/Org")
-  :config
-  (add-hook 'org-mode-hook #'visual-line-mode))
+  :hook (org-mode . visual-line-mode))
 
 ;;; Commands
 
