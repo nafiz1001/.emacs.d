@@ -493,7 +493,13 @@ With a prefix argument CONVERT, also convert the leading whitespace."
   :ensure t)
 
 (use-package docker
-  :ensure t)
+  :ensure t
+  :custom
+  ;; Podman's `network ls' has no .Scope field.
+  (docker-network-columns
+   '((:name "Network ID" :width 20 :template "{{ json .ID }}" :sort nil :format nil)
+     (:name "Name" :width 50 :template "{{ json .Name }}" :sort nil :format nil)
+     (:name "Driver" :width 10 :template "{{ json .Driver }}" :sort nil :format nil))))
 
 ;;; Org
 
