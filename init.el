@@ -179,12 +179,9 @@
 
 ;;; Navigation
 
-(use-package windmove
-  :ensure nil
-  :bind (("C-x <left>"  . windmove-left)
-	     ("C-x <right>" . windmove-right)
-	     ("C-x <up>"    . windmove-up)
-	     ("C-x <down>"  . windmove-down)))
+(use-package ace-window
+  :ensure t
+  :bind ("C-x o" . ace-window))
 
 (use-package xref
   :ensure nil
