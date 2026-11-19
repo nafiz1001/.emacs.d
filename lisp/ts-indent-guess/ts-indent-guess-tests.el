@@ -21,7 +21,8 @@
 ;;
 ;; Run all tests from the repository root:
 ;;
-;;   emacs -Q --batch -L lisp -l test/ts-indent-guess-tests.el \
+;;   emacs -Q --batch -L lisp/ts-indent-guess \
+;;         -l lisp/ts-indent-guess/ts-indent-guess-tests.el \
 ;;         -f ert-run-tests-batch-and-exit
 ;;
 ;; Or, in a running Emacs, load this file and type M-x ert RET t RET.

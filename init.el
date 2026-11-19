@@ -236,7 +236,7 @@
 
 (use-package ts-indent-guess
   :ensure nil
-  :load-path "lisp"
+  :load-path "lisp/ts-indent-guess"
   :config
   (ts-indent-guess-mode 1))
 
