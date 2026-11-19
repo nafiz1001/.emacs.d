@@ -40,6 +40,41 @@ Write this form to `edit.el` in the scratchpad directory. Replace the three path
     (save-buffer)))
 ```
 
+### Refresh after git
+Run git in the shell. Shell git does not update VC, diff-hl or Magit in the daemon.
+- After a git write operation, run `emacsclient --eval t`. If it fails, no daemon runs. Do nothing more.
+- If a daemon runs, run `refresh.el`. Examples of write operations: `commit`, `merge`, `switch`, `stash`, `reset`, `pull`.
+- This refresh does not need approval.
+
+Write this form to `refresh.el` in the scratchpad directory. Replace the repo path. Run `emacsclient --eval "$(cat <scratchpad>/refresh.el)"`.
+
+```elisp
+(let ((root "/abs/path/to/repo/"))
+  ;; file-in-directory-p expands the default-directory of every buffer.
+  ;; For a stale TRAMP buffer, TRAMP opens a new connection.  With
+  ;; non-essential, TRAMP uses only connections that are already open.
+  (let ((non-essential t))
+    (dolist (buffer (buffer-list))
+      (with-current-buffer buffer
+        (when (file-in-directory-p default-directory root)
+          (cond
+           ;; Revert now. global-auto-revert-mode reverts later, so the
+           ;; Magit refresh below sees stale buffers.
+           ((and buffer-file-name
+                 (not (buffer-modified-p))
+                 (not (verify-visited-file-modtime)))
+            (revert-buffer t t t))
+           (buffer-file-name
+            (vc-refresh-state)
+            (when (bound-and-true-p diff-hl-mode)
+              (diff-hl-update)))
+           ((derived-mode-p 'vc-dir-mode)
+            (vc-dir-refresh)))))))
+  (let ((default-directory root))
+    (when (fboundp 'magit-refresh-all)
+      (magit-refresh-all))))
+```
+
 ## Emacs Lisp
 - If an argument of a function call is a function call, bind that argument to a name with `let` or `let*`. Then pass the name.
 - These forms are exempt. Their arguments can be function calls:
