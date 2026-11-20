@@ -485,9 +485,14 @@
 
 (use-package org
   :ensure nil
-  :bind ("C-c c" . org-capture)
+  :bind (("C-c c" . org-capture)
+         ("C-c a" . org-agenda))
   :custom
   (org-directory "~/Documents/Org")
+  ;; Not in org-agenda-files: the cheat sheet has no tasks.  Org reads
+  ;; this list only for text search (C-c a s), not for agenda views.
+  (org-agenda-text-search-extra-files
+   (list (expand-file-name "cheatsheet.org" user-emacs-directory)))
   ;; test/cheatsheet-capture-tests.el tests template "k" and the
   ;; org-capture-prepare-finalize hook below.  The tests read both from
   ;; this block, so run them after a change here.
@@ -557,11 +562,6 @@
 (defun copy-buffer-name ()
   (interactive)
   (kill-new (buffer-name)))
-
-(defun open-cheatsheet ()
-  (interactive)
-  (let ((file (expand-file-name "cheatsheet.org" user-emacs-directory)))
-    (find-file file)))
 
 ;;; Projects
 

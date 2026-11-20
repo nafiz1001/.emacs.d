@@ -4,12 +4,13 @@
 Bindings that =init.el= or its packages add to vanilla Emacs. =(custom)= marks a binding that =init.el= adds. =Default:= names the binding in =emacs -Q=. =\vert= is the =|= key.
 
 * Capture a new binding
-| Key                   | Command              | Note                                                   |
-|-----------------------+----------------------+--------------------------------------------------------|
-| ~C-c c k~             | org-capture          | (custom) Pick a section, press the binding, add a note |
-| ~C-c C-c~             | org-capture-finalize | Save the new row                                       |
-| ~C-c C-k~             | org-capture-kill     | Abort                                                  |
-| ~M-x open-cheatsheet~ | open-cheatsheet      | (custom) Open this file                                |
+| Key           | Command                 | Note                                                   |
+|---------------+-------------------------+--------------------------------------------------------|
+| ~C-c c k~     | org-capture             | (custom) Pick a section, press the binding, add a note |
+| ~C-c C-c~     | org-capture-finalize    | Save the new row                                       |
+| ~C-c C-k~     | org-capture-kill        | Abort                                                  |
+| ~C-u C-c c k~ | org-capture-goto-target | Open this file at a section. A new name adds a section |
+| ~C-c a s~     | org-search-view         | (custom) Search this file from any buffer              |
 
 * project
 | Key       | Command              | Note                                                |
@@ -138,6 +139,7 @@ Default: plain minibuffer, ~C-s~ / ~C-r~ run isearch.
 |-----------+-----------------------+----------------------------------|
 | ~C-c c~   | org-capture           | (custom) Default: unbound        |
 | ~C-c c k~ | capture a key binding | (custom) Adds a row to this file |
+| ~C-c a~   | org-agenda            | (custom) Default: unbound        |
 
 * custom commands
 | Key                         | Command               | Note                     |
@@ -145,4 +147,3 @@ Default: plain minibuffer, ~C-s~ / ~C-r~ run isearch.
 | ~M-x copy-buffer-file-name~ | copy-buffer-file-name |                          |
 | ~M-x copy-buffer-name~      | copy-buffer-name      |                          |
 | ~M-x unhighlight-all~       | unhighlight-all       | Clear ~M-s h~ highlights |
-| ~M-x open-cheatsheet~       | open-cheatsheet       | This file                |
