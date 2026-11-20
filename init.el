@@ -343,7 +343,18 @@
 ;; Eglot renders LSP documentation with gfm-view-mode from markdown-mode.
 ;; Without it, Eglot shows raw markdown in text-mode.
 (use-package markdown-mode
-  :ensure t)
+  :ensure t
+  :config
+  ;; Bug in markdown-mode: if the source buffer of a live preview dies
+  ;; first, the preview keeps a pointer to the dead buffer.  The kill
+  ;; hook of the preview then calls with-current-buffer on it, which
+  ;; signals "Selecting deleted buffer".  An error in kill-buffer-hook
+  ;; aborts kill-buffer, so the preview (an eww buffer) cannot be
+  ;; killed.  Clear the dead pointer first.
+  (advice-add 'markdown-live-preview-remove-on-kill :before
+              (lambda ()
+                (unless (buffer-live-p markdown-live-preview-source-buffer)
+                  (setq markdown-live-preview-source-buffer nil)))))
 
 ;; markdown-ts-mode does not add itself to auto-mode-alist.
 ;; This block comes after markdown-mode, so its .md entry wins.
