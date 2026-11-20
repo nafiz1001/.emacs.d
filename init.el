@@ -520,3 +520,11 @@
                         "shell")
                 nil
                 t)))
+
+;;; Late Init
+
+;; envrc must enable after the other global modes, so that its hook runs
+;; first and sets the buffer environment before Eglot starts a server.
+(use-package envrc
+  :ensure t
+  :hook (after-init . envrc-global-mode))
