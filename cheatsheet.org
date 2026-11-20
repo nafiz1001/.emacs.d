@@ -1,0 +1,148 @@
+#+TITLE: Emacs Cheat Sheet
+#+STARTUP: overview
+
+Bindings that =init.el= or its packages add to vanilla Emacs. =(custom)= marks a binding that =init.el= adds. =Default:= names the binding in =emacs -Q=. =\vert= is the =|= key.
+
+* Capture a new binding
+| Key                   | Command              | Note                                                   |
+|-----------------------+----------------------+--------------------------------------------------------|
+| ~C-c c k~             | org-capture          | (custom) Pick a section, press the binding, add a note |
+| ~C-c C-c~             | org-capture-finalize | Save the new row                                       |
+| ~C-c C-k~             | org-capture-kill     | Abort                                                  |
+| ~M-x open-cheatsheet~ | open-cheatsheet      | (custom) Open this file                                |
+
+* project
+| Key       | Command              | Note                                                |
+|-----------+----------------------+-----------------------------------------------------|
+| ~C-x p m~ | magit-project-status | (custom) Also ~m~ after ~C-x p p~. Default: unbound |
+
+* dape (debugger)
+| Key                          | Command                      | Note                                                              |
+|------------------------------+------------------------------+-------------------------------------------------------------------|
+| ~C-x C-a d~                  | dape                         | Start a session. Default ~C-x C-a~: gud keys, only in gud buffers |
+| ~C-x C-a b~                  | dape-breakpoint-toggle       |                                                                   |
+| ~mouse-1~ (fringe or margin) | dape-mouse-breakpoint-toggle | Default: nothing                                                  |
+| ~C-x C-a e~                  | dape-breakpoint-expression   | Conditional breakpoint                                            |
+| ~C-x C-a c~                  | dape-continue                |                                                                   |
+| ~C-x C-a n~                  | dape-next                    | Then ~n~ repeats (also ~s~, ~o~, ~c~ ...)                         |
+| ~C-x C-a s~                  | dape-step-in                 |                                                                   |
+| ~C-x C-a o~                  | dape-step-out                |                                                                   |
+| ~C-x C-a p~                  | dape-pause                   |                                                                   |
+| ~C-x C-a w~                  | dape-watch-dwim              |                                                                   |
+| ~C-x C-a x~                  | dape-evaluate-expression     |                                                                   |
+| ~C-x C-a R~                  | dape-repl                    |                                                                   |
+| ~C-x C-a i~                  | dape-info                    |                                                                   |
+| ~C-x C-a r~                  | dape-restart                 |                                                                   |
+| ~C-x C-a q~                  | dape-quit                    |                                                                   |
+
+* magit
+| Key       | Command             | Note                    |
+|-----------+---------------------+-------------------------|
+| ~C-x g~   | magit-status        |                         |
+| ~C-x M-g~ | magit-dispatch      | All Magit commands      |
+| ~C-c M-g~ | magit-file-dispatch | Blame, log of this file |
+| ~s~ / ~u~ | stage / unstage     | In status               |
+| ~c c~     | commit              | ~C-c C-c~ to finish     |
+| ~P p~     | push                |                         |
+| ~F p~     | pull                |                         |
+| ~l l~     | log current branch  |                         |
+| ~b b~     | checkout branch     |                         |
+| ~z z~     | stash               |                         |
+| ~?~       | help                | All keys in this buffer |
+
+* diff-hl
+| Key                   | Command                            | Note                                    |
+|-----------------------+------------------------------------+-----------------------------------------|
+| ~C-x v [~             | diff-hl-previous-hunk              | Then ~[~ / ~]~ repeat. Default: unbound |
+| ~C-x v ]~             | diff-hl-next-hunk                  | Default: unbound                        |
+| ~C-x v *~             | diff-hl-show-hunk                  | Popup of the hunk                       |
+| ~C-x v {~ / ~C-x v }~ | diff-hl-show-hunk-previous / -next | Popup of the previous / next hunk       |
+| ~C-x v n~             | diff-hl-revert-hunk                |                                         |
+| ~C-x v S~             | diff-hl-stage-dwim                 | Stage hunk or region                    |
+
+* dired
+| Key       | Command                   | Note                                                                                |
+|-----------+---------------------------+-------------------------------------------------------------------------------------|
+| ~W~       | copy absolute file name   | (custom) Default: browse-url-of-dired-file                                          |
+| ~a~       | dired-find-alternate-file | Open in place, no confirmation, one dired buffer at a time. Default: asks to enable |
+| ~C-x C-q~ | wdired                    | Can also edit permissions. Default: names only                                      |
+
+* outline
+| Key                       | Command                | Note                                  |
+|---------------------------+------------------------+---------------------------------------|
+| ~TAB~ / ~S-TAB~           | outline-cycle          | On a heading in code. Default: indent |
+| ~mouse-1~ (margin button) | fold or show a heading | Default: nothing                      |
+
+* ace-window
+| Key     | Command               | Note                                                          |
+|---------+-----------------------+---------------------------------------------------------------|
+| ~C-x o~ | ace-window            | (custom) With 3+ windows, type a label. Default: other-window |
+| ~?~     | aw-show-dispatch-help | At the label prompt                                           |
+| ~x~     | aw-delete-window      | At the label prompt, then the label                           |
+| ~m~     | aw-swap-window        | At the label prompt, then the label                           |
+| ~o~     | delete-other-windows  | At the label prompt, then the label                           |
+
+* repeat-mode
+Last key of a chain repeats without the prefix. Default: needs the full key.
+
+| Key           | Command           | Note                 |
+|---------------+-------------------+----------------------|
+| ~C-x u u u~   | undo              |                      |
+| ~C-x { { }~   | resize window     | ~{ } ^ v~ repeat     |
+| ~M-g n n~     | next-error        | ~p~ goes back        |
+| ~C-x t o o~   | tab-next          | ~O~ goes back        |
+| ~C-x C-a n n~ | dape-next         | All dape keys repeat |
+| ~C-x v ] ]~   | diff-hl-next-hunk |                      |
+
+* fido (minibuffer)
+Default: plain minibuffer, ~C-s~ / ~C-r~ run isearch.
+
+| Key           | Command                           | Note                         |
+|---------------+-----------------------------------+------------------------------|
+| ~C-s~ / ~C-r~ | next / previous candidate         | Also ~C-.~ / ~C-,~           |
+| ~RET~         | icomplete-fido-ret                | Pick the first candidate     |
+| ~C-j~         | icomplete-force-complete-and-exit |                              |
+| ~M-j~         | icomplete-fido-exit               | Use the input as typed       |
+| ~C-d~         | icomplete-fido-delete-char        | At end of file prompt: dired |
+
+* which-key
+| Key               | Command   | Note                                     |
+|-------------------+-----------+------------------------------------------|
+| prefix, then wait | which-key | Popup of the next keys. Default: nothing |
+
+* mouse and clipboard
+| Key                                 | Command                  | Note                                             |
+|-------------------------------------+--------------------------+--------------------------------------------------|
+| ~mouse-3~                           | context menu             | context-menu-mode. Default: mouse-save-then-kill |
+| mouse in a terminal                 | works                    | xterm-mouse-mode. Default: not handled           |
+| ~C-w~ / ~M-w~ / ~C-y~ in a terminal | use the system clipboard | xclip. Default: kill ring only                   |
+
+* citre (ctags)
+| Key                               | Command                     | Note                                     |
+|-----------------------------------+-----------------------------+------------------------------------------|
+| ~M-.~                             | xref via citre              | Tags backend when no LSP. Default: etags |
+| ~M-x citre-peek~                  | citre-peek                  | Definition in a popup                    |
+| ~M-x citre-jump~                  | citre-jump                  |                                          |
+| ~M-x citre-update-this-tags-file~ | citre-update-this-tags-file |                                          |
+
+* shells and remote
+| Key                       | Command                             | Note                                                                              |
+|---------------------------+-------------------------------------+-----------------------------------------------------------------------------------|
+| ~M-!~ / ~M-&~             | shell-command / async-shell-command | (custom) Output buffer named after the command. Default: =*Shell Command Output*= |
+| ~M-x mistty~              | mistty                              | Terminal with Emacs editing                                                       |
+| ~M-x docker~              | docker                              | Containers (podman)                                                               |
+| ~C-x C-f /toolbox:NAME:/~ | TRAMP                               | (custom) Toolbox container                                                        |
+
+* org
+| Key       | Command               | Note                             |
+|-----------+-----------------------+----------------------------------|
+| ~C-c c~   | org-capture           | (custom) Default: unbound        |
+| ~C-c c k~ | capture a key binding | (custom) Adds a row to this file |
+
+* custom commands
+| Key                         | Command               | Note                     |
+|-----------------------------+-----------------------+--------------------------|
+| ~M-x copy-buffer-file-name~ | copy-buffer-file-name |                          |
+| ~M-x copy-buffer-name~      | copy-buffer-name      |                          |
+| ~M-x unhighlight-all~       | unhighlight-all       | Clear ~M-s h~ highlights |
+| ~M-x open-cheatsheet~       | open-cheatsheet       | This file                |

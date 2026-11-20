@@ -485,8 +485,31 @@
 
 (use-package org
   :ensure nil
+  :bind ("C-c c" . org-capture)
   :custom
   (org-directory "~/Documents/Org")
+  (org-capture-templates
+   `(("k" "Key binding" table-line
+      (file+function
+       ,(expand-file-name "cheatsheet.org" user-emacs-directory)
+       ;; table-line adds the row to the first table under this heading.
+       (lambda ()
+         (let* ((sections (org-map-entries
+                           (lambda () (org-get-heading t t t t))
+                           "LEVEL=1"))
+                (section (completing-read "Section: " sections nil t))
+                (heading (org-find-exact-headline-in-buffer section)))
+           (goto-char heading))))
+      ;; org-capture calls this in the buffer where capture started, so
+      ;; key-binding sees the keymaps of that buffer's modes.
+      (function
+       (lambda ()
+         (let* ((keys (read-key-sequence "Key: "))
+                (command (key-binding keys))
+                (description (key-description keys))
+                ;; A bare | ends the table cell.
+                (cell (string-replace "|" "\\vert" description)))
+           (format "| ~%s~ | %s | %%^{Note} |" cell command)))))))
   :hook (org-mode . visual-line-mode))
 
 ;;; Commands
@@ -502,6 +525,11 @@
 (defun copy-buffer-name ()
   (interactive)
   (kill-new (buffer-name)))
+
+(defun open-cheatsheet ()
+  (interactive)
+  (let ((file (expand-file-name "cheatsheet.org" user-emacs-directory)))
+    (find-file file)))
 
 ;;; Projects
 
