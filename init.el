@@ -497,9 +497,21 @@
          (let* ((sections (org-map-entries
                            (lambda () (org-get-heading t t t t))
                            "LEVEL=1"))
-                (section (completing-read "Section: " sections nil t))
+                (section (completing-read "Section: " sections))
                 (heading (org-find-exact-headline-in-buffer section)))
-           (goto-char heading))))
+           (if heading
+               (goto-char heading)
+             ;; A new section needs the table header too. Without a
+             ;; table, table-line creates one with an empty header.
+             (goto-char (point-max))
+             (unless (bolp)
+               (insert "\n"))
+             (insert "\n")
+             (let ((new-heading (point)))
+               (insert "* " section "\n"
+                       "| Key | Command | Note |\n"
+                       "|-----+---------+------|\n")
+               (goto-char new-heading))))))
       ;; org-capture calls this in the buffer where capture started, so
       ;; key-binding sees the keymaps of that buffer's modes.
       (function
