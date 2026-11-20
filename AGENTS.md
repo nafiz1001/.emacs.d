@@ -51,13 +51,13 @@ Write this form to `refresh.el` in the scratchpad directory. Replace the repo pa
 ## Batch tests
 - To test a change in batch Emacs, write an ERT test file. Do not test with only `--eval` forms.
 - Put the file where it stays if the user keeps it:
-  - For a feature of `init.el`: `test/<feature>-tests.el`.
+  - For a feature of `early-init.el` or `init.el`: `test/<feature>-tests.el`.
   - For a package in `lisp/<pkg>/`: `lisp/<pkg>/<pkg>-tests.el`.
   - If a test file for the feature exists, add the tests to it.
 - In the Commentary of a new file, write the command that runs it.
 - Run it with `emacs -Q --batch ... -f ert-run-tests-batch-and-exit`.
 - After the tests run, ask the user with AskUserQuestion whether to keep the tests in the checkout as part of the commit.
-  - If the user says yes, keep the file and include it in the commit.
+  - If the user says yes, keep the file and include it in the commit. Put a comment directly above the code of the new feature. In the comment, give the path of the test file.
   - If the user says no, remove the new file, or remove the added tests from an existing file.
 
 ## Emacs Lisp
