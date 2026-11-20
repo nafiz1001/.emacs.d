@@ -352,6 +352,12 @@
   :mode "\\.md\\'"
   ;; Line numbers make each redisplay in this mode allocate about 40%
   ;; more. A read-only view does not need them.
+  ;; Possible Emacs bug (31.1): line numbers cost much more here than
+  ;; in text-mode. Most allocation is in C (redisplay_internal and
+  ;; line-move-visual), not in Lisp. A guess: something in
+  ;; markdown-ts-mode makes each line move redisplay the whole window,
+  ;; so Emacs builds every line number again. If a later Emacs fixes
+  ;; this, remove the hook. Candidate for M-x report-emacs-bug.
   :hook (markdown-ts-view-mode . (lambda () (display-line-numbers-mode -1))))
 
 (use-package outline
