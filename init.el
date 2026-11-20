@@ -349,7 +349,10 @@
 ;; This block comes after markdown-mode, so its .md entry wins.
 (use-package markdown-ts-mode
   :ensure nil
-  :mode "\\.md\\'")
+  :mode "\\.md\\'"
+  ;; Line numbers make each redisplay in this mode allocate about 40%
+  ;; more. A read-only view does not need them.
+  :hook (markdown-ts-view-mode . (lambda () (display-line-numbers-mode -1))))
 
 (use-package outline
   :ensure nil
