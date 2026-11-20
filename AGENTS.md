@@ -61,6 +61,15 @@ Write this form to `refresh.el` in the scratchpad directory. Replace the repo pa
   - If the user says no, remove the new file, or remove the added tests from an existing file.
 
 ## Emacs Lisp
+
+### Named functions
+- Prefer named functions to anonymous functions. If you put a function in a hook, an advice, a variable, a key binding or a capture template, define it with `defun` and use its name. Reasons: a backtrace shows the name, `debug-on-entry`, `trace-function` and `edebug-defun` work, and evaluating a changed `defun` replaces the old definition. A changed lambda on a hook adds a second copy.
+- This rule overrides the rule against single-use abstractions.
+- Exception: a short lambda that the called function uses immediately and does not keep. Examples: the function argument of `mapcar`, `seq-filter` or `org-map-entries`.
+- Give each new function of the config the prefix `my/`.
+- In a `use-package` block, define the function in `:preface`. `:hook`, `:bind` and `:custom` can use the function before `:config` runs.
+
+### Bind arguments
 - If an argument of a function call is a function call, bind that argument to a name with `let` or `let*`. Then pass the name.
 - These forms are exempt. Their arguments can be function calls:
   - Special forms and macros that control evaluation. Examples: `and`, `or`, `not`, `if`, `when`, `unless`, `cond`, `pcase`, `progn`, `while`, `dolist`, `condition-case`, `save-excursion`, `with-*`.

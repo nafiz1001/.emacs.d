@@ -76,7 +76,10 @@
 
 (use-package artist
   :ensure nil
-  :hook (artist-mode . (lambda () (setq indent-tabs-mode nil))))
+  :preface
+  (defun my/artist-disable-tabs ()
+    (setq indent-tabs-mode nil))
+  :hook (artist-mode . my/artist-disable-tabs))
 
 ;;; UI
 
@@ -119,6 +122,10 @@
 
 (use-package dashboard
   :ensure t
+  :preface
+  (defun my/dashboard-initial-buffer ()
+    (dashboard-open)
+    (get-buffer dashboard-buffer-name))
   :custom
   (dashboard-startup-banner 'logo)
   (dashboard-projects-backend 'project-el)
@@ -127,9 +134,7 @@
                      (bookmarks . 5)))
   ;; `dashboard-setup-startup-hook' skips `emacs --daemon', so client
   ;; frames need this to show the dashboard.
-  (initial-buffer-choice (lambda ()
-                           (dashboard-open)
-                           (get-buffer dashboard-buffer-name)))
+  (initial-buffer-choice #'my/dashboard-initial-buffer)
   :config
   (dashboard-setup-startup-hook))
 
@@ -154,12 +159,16 @@
 
 (use-package dired
   :ensure nil
+  :preface
+  (defun my/dired-copy-absolute-file-name ()
+    (interactive)
+    (dired-copy-filename-as-kill 0))
   :custom
   (dired-dwim-target t)
   (dired-listing-switches "-alh --group-directories-first")
   (dired-kill-when-opening-new-dired-buffer t)
   :bind (:map dired-mode-map
-              ("W" . (lambda () (interactive) (dired-copy-filename-as-kill 0))))
+              ("W" . my/dired-copy-absolute-file-name))
   :config
   (put 'dired-find-alternate-file 'disabled nil))
 
@@ -261,6 +270,7 @@
 
 (use-package python
   :ensure nil
+  :preface
   ;; python-ts-mode enables node-based `sexp' navigation. Then
   ;; `backward-sexp' after a closing paren that ends a method moves to
   ;; the `def', not to the matching paren. Use list-based navigation,
@@ -268,10 +278,11 @@
   ;; `treesit-cycle-sexp-thing' gives in list mode. It does not call
   ;; that command, because the command toggles, so a later change of
   ;; the python-ts-mode default would flip the result.
-  :hook (python-ts-mode . (lambda ()
-                            (setq-local treesit-sexp-thing nil
-                                        forward-sexp-function
-                                        #'treesit-forward-sexp-list))))
+  (defun my/python-ts-use-list-sexp ()
+    (setq-local treesit-sexp-thing nil
+                forward-sexp-function
+                #'treesit-forward-sexp-list))
+  :hook (python-ts-mode . my/python-ts-use-list-sexp))
 
 ;;;; Other
 
@@ -344,23 +355,26 @@
 ;; Without it, Eglot shows raw markdown in text-mode.
 (use-package markdown-mode
   :ensure t
-  :config
+  :preface
   ;; Bug in markdown-mode: if the source buffer of a live preview dies
   ;; first, the preview keeps a pointer to the dead buffer.  The kill
   ;; hook of the preview then calls with-current-buffer on it, which
   ;; signals "Selecting deleted buffer".  An error in kill-buffer-hook
   ;; aborts kill-buffer, so the preview (an eww buffer) cannot be
   ;; killed.  Clear the dead pointer first.
+  (defun my/markdown-live-preview-clear-dead-source ()
+    (unless (buffer-live-p markdown-live-preview-source-buffer)
+      (setq markdown-live-preview-source-buffer nil)))
+  :config
   (advice-add 'markdown-live-preview-remove-on-kill :before
-              (lambda ()
-                (unless (buffer-live-p markdown-live-preview-source-buffer)
-                  (setq markdown-live-preview-source-buffer nil)))))
+              #'my/markdown-live-preview-clear-dead-source))
 
 ;; markdown-ts-mode does not add itself to auto-mode-alist.
 ;; This block comes after markdown-mode, so its .md entry wins.
 (use-package markdown-ts-mode
   :ensure nil
   :mode "\\.md\\'"
+  :preface
   ;; Line numbers make each redisplay in this mode allocate about 40%
   ;; more. A read-only view does not need them.
   ;; Possible Emacs bug (31.1): line numbers cost much more here than
@@ -369,23 +383,26 @@
   ;; markdown-ts-mode makes each line move redisplay the whole window,
   ;; so Emacs builds every line number again. If a later Emacs fixes
   ;; this, remove the hook. Candidate for M-x report-emacs-bug.
-  :hook (markdown-ts-view-mode . (lambda () (display-line-numbers-mode -1))))
+  (defun my/markdown-ts-view-hide-line-numbers ()
+    (display-line-numbers-mode -1))
+  :hook (markdown-ts-view-mode . my/markdown-ts-view-hide-line-numbers))
 
 (use-package outline
   :ensure nil
+  :preface
+  ;; Only tree-sitter modes with headings set these variables.
+  ;; treesit-major-mode-setup sets the search function. Some
+  ;; modes, such as python-ts-mode, set their own regexp instead.
+  (defun my/outline-enable-for-treesit-headings ()
+    (when (and (treesit-parser-list)
+               (seq-some #'local-variable-p
+                         '(outline-search-function outline-regexp)))
+      (outline-minor-mode 1)))
   :custom
   (outline-minor-mode-cycle t)
   (outline-minor-mode-use-buttons 'in-margin)
   :hook ((emacs-lisp-mode . outline-minor-mode)
-         ;; Only tree-sitter modes with headings set these variables.
-         ;; treesit-major-mode-setup sets the search function. Some
-         ;; modes, such as python-ts-mode, set their own regexp instead.
-         (after-change-major-mode
-          . (lambda ()
-              (when (and (treesit-parser-list)
-                         (seq-some #'local-variable-p
-                                   '(outline-search-function outline-regexp)))
-                (outline-minor-mode 1))))))
+         (after-change-major-mode . my/outline-enable-for-treesit-headings)))
 
 (use-package lisp-mode
   :ensure nil
@@ -448,18 +465,18 @@
   ;; run `shell-command' with no output buffer and would each leave a
   ;; buffer.  A remote command gets the TRAMP prefix in the name, so the
   ;; buffer shows where the command runs.
+  (defun my/shell-command-output-buffer-args (spec)
+    (let ((interactive-args (advice-eval-interactive-spec spec)))
+      (pcase-let ((`(,command ,output-buffer . ,rest) interactive-args))
+        (if output-buffer
+            interactive-args
+          (let* ((remote (file-remote-p default-directory))
+                 (buffer-name (if remote
+                                  (format "*%s* @ %s" command remote)
+                                (format "*%s*" command))))
+            `(,command ,buffer-name ,@rest))))))
   (defun shell-command-name-output-buffer (args)
-    (interactive
-     (lambda (spec)
-       (let ((interactive-args (advice-eval-interactive-spec spec)))
-         (pcase-let ((`(,command ,output-buffer . ,rest) interactive-args))
-           (if output-buffer
-               interactive-args
-             (let* ((remote (file-remote-p default-directory))
-                    (buffer-name (if remote
-                                     (format "*%s* @ %s" command remote)
-                                   (format "*%s*" command))))
-               `(,command ,buffer-name ,@rest)))))))
+    (interactive #'my/shell-command-output-buffer-args)
     args)
   (advice-add 'shell-command :filter-args #'shell-command-name-output-buffer)
   (advice-add 'async-shell-command :filter-args #'shell-command-name-output-buffer))
@@ -485,6 +502,56 @@
 
 (use-package org
   :ensure nil
+  ;; test/cheatsheet-capture-tests.el tests template "k" with
+  ;; my/cheatsheet-capture-goto-section, my/cheatsheet-capture-key-row
+  ;; and my/org-capture-remove-table-line-newline.  The tests read all of
+  ;; them from this block, so run them after a change here.
+  :preface
+  ;; table-line adds the row to the first table under this heading.
+  (defun my/cheatsheet-capture-goto-section ()
+    (let* ((sections (org-map-entries
+                      (lambda () (org-get-heading t t t t))
+                      "LEVEL=1"))
+           (section (completing-read "Section: " sections))
+           (heading (org-find-exact-headline-in-buffer section)))
+      (if heading
+          (goto-char heading)
+        ;; A new section needs the table header too. Without a
+        ;; table, table-line creates one with an empty header.
+        (goto-char (point-max))
+        (unless (bolp)
+          (insert "\n"))
+        (insert "\n")
+        (let ((new-heading (point)))
+          (insert "* " section "\n"
+                  "| Key | Command | Note |\n"
+                  "|-----+---------+------|\n")
+          (goto-char new-heading)))))
+  ;; org-capture calls this in the buffer where capture started, so
+  ;; key-binding sees the keymaps of that buffer's modes.
+  (defun my/cheatsheet-capture-key-row ()
+    (let* ((keys (read-key-sequence "Key: "))
+           (command (key-binding keys))
+           (description (key-description keys))
+           ;; A bare | ends the table cell.
+           (cell (string-replace "|" "\\vert" description)))
+      ;; %? leaves point at the start of the key cell. TAB moves to
+      ;; the next cell. C-c C-c saves the row with an empty note.
+      (format "| %%?~%s~ | %s |  |" cell command)))
+  ;; Org bug (9.8.7): a table-line capture buffer is narrowed
+  ;; without the newline that ends the row.  When org-table-align
+  ;; runs in it, such as on TAB, it adds a newline inside the
+  ;; narrowing, and the file gets a blank line after the table.
+  ;; This hook runs while the buffer is still narrowed, so a
+  ;; final newline there is always the extra one.
+  (defun my/org-capture-remove-table-line-newline ()
+    (let ((type (org-capture-get :type 'local))
+          (last-char (char-before (point-max))))
+      (when (and (eq type 'table-line)
+                 (eq last-char ?\n))
+        (save-excursion
+          (goto-char (point-max))
+          (delete-char -1)))))
   :bind (("C-c c" . org-capture)
          ("C-c a" . org-agenda))
   :custom
@@ -493,61 +560,15 @@
   ;; this list only for text search (C-c a s), not for agenda views.
   (org-agenda-text-search-extra-files
    (list (expand-file-name "cheatsheet.org" user-emacs-directory)))
-  ;; test/cheatsheet-capture-tests.el tests template "k" and the
-  ;; org-capture-prepare-finalize hook below.  The tests read both from
-  ;; this block, so run them after a change here.
   (org-capture-templates
    `(("k" "Key binding" table-line
       (file+function
        ,(expand-file-name "cheatsheet.org" user-emacs-directory)
-       ;; table-line adds the row to the first table under this heading.
-       (lambda ()
-         (let* ((sections (org-map-entries
-                           (lambda () (org-get-heading t t t t))
-                           "LEVEL=1"))
-                (section (completing-read "Section: " sections))
-                (heading (org-find-exact-headline-in-buffer section)))
-           (if heading
-               (goto-char heading)
-             ;; A new section needs the table header too. Without a
-             ;; table, table-line creates one with an empty header.
-             (goto-char (point-max))
-             (unless (bolp)
-               (insert "\n"))
-             (insert "\n")
-             (let ((new-heading (point)))
-               (insert "* " section "\n"
-                       "| Key | Command | Note |\n"
-                       "|-----+---------+------|\n")
-               (goto-char new-heading))))))
-      ;; org-capture calls this in the buffer where capture started, so
-      ;; key-binding sees the keymaps of that buffer's modes.
-      (function
-       (lambda ()
-         (let* ((keys (read-key-sequence "Key: "))
-                (command (key-binding keys))
-                (description (key-description keys))
-                ;; A bare | ends the table cell.
-                (cell (string-replace "|" "\\vert" description)))
-           ;; %? leaves point at the start of the key cell. TAB moves to
-           ;; the next cell. C-c C-c saves the row with an empty note.
-           (format "| %%?~%s~ | %s |  |" cell command)))))))
+       my/cheatsheet-capture-goto-section)
+      (function my/cheatsheet-capture-key-row))))
   :hook ((org-mode . visual-line-mode)
-         ;; Org bug (9.8.7): a table-line capture buffer is narrowed
-         ;; without the newline that ends the row.  When org-table-align
-         ;; runs in it, such as on TAB, it adds a newline inside the
-         ;; narrowing, and the file gets a blank line after the table.
-         ;; This hook runs while the buffer is still narrowed, so a
-         ;; final newline there is always the extra one.
          (org-capture-prepare-finalize
-          . (lambda ()
-              (let ((type (org-capture-get :type 'local))
-                    (last-char (char-before (point-max))))
-                (when (and (eq type 'table-line)
-                           (eq last-char ?\n))
-                  (save-excursion
-                    (goto-char (point-max))
-                    (delete-char -1))))))))
+          . my/org-capture-remove-table-line-newline)))
 
 ;;; Commands
 
