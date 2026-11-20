@@ -488,6 +488,9 @@
   :bind ("C-c c" . org-capture)
   :custom
   (org-directory "~/Documents/Org")
+  ;; test/cheatsheet-capture-tests.el tests template "k" and the
+  ;; org-capture-prepare-finalize hook below.  The tests read both from
+  ;; this block, so run them after a change here.
   (org-capture-templates
    `(("k" "Key binding" table-line
       (file+function
@@ -521,8 +524,25 @@
                 (description (key-description keys))
                 ;; A bare | ends the table cell.
                 (cell (string-replace "|" "\\vert" description)))
-           (format "| ~%s~ | %s | %%^{Note} |" cell command)))))))
-  :hook (org-mode . visual-line-mode))
+           ;; %? leaves point at the start of the key cell. TAB moves to
+           ;; the next cell. C-c C-c saves the row with an empty note.
+           (format "| %%?~%s~ | %s |  |" cell command)))))))
+  :hook ((org-mode . visual-line-mode)
+         ;; Org bug (9.8.7): a table-line capture buffer is narrowed
+         ;; without the newline that ends the row.  When org-table-align
+         ;; runs in it, such as on TAB, it adds a newline inside the
+         ;; narrowing, and the file gets a blank line after the table.
+         ;; This hook runs while the buffer is still narrowed, so a
+         ;; final newline there is always the extra one.
+         (org-capture-prepare-finalize
+          . (lambda ()
+              (let ((type (org-capture-get :type 'local))
+                    (last-char (char-before (point-max))))
+                (when (and (eq type 'table-line)
+                           (eq last-char ?\n))
+                  (save-excursion
+                    (goto-char (point-max))
+                    (delete-char -1))))))))
 
 ;;; Commands
 
