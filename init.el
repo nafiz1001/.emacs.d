@@ -528,39 +528,12 @@
 
 ;;;; Freezeman
 
-(defconst freezeman-project-root "~/projects/c3g-workspace/freezeman/")
-
-(defun freezeman-backend ()
-  (interactive)
-  (ignore-error '(error "python manage.py runserver")
-    (let ((kill-buffer-query-functions nil))
-      (kill-buffer "python manage.py runserver")))
-  (async-shell-command
-   (concat "cd " (file-name-concat freezeman-project-root "backend")
-	       " && . ./.venv/bin/activate"
-	       " && python manage.py runserver")
-   "python manage.py runserver"))
-
-(defun freezeman-frontend ()
-  (interactive)
-  (ignore-error '(error "No buffer named npm start")
-    (let ((kill-buffer-query-functions nil))
-      (kill-buffer "npm start")))
-  (async-shell-command
-   (concat "cd " (file-name-concat freezeman-project-root "frontend")
-	       " && npm start")
-   "npm start"))
-
-(defun freezeman-shell ()
-  (interactive)
-  (let ((default-directory freezeman-project-root))
-    (run-python (concat (file-name-concat freezeman-project-root "backend" ".venv" "bin" "python")
-                        " "
-                        (file-name-concat "backend" "manage.py")
-                        " "
-                        "shell")
-                nil
-                t)))
+(use-package freezeman
+  :ensure nil
+  :load-path "lisp/freezeman"
+  :commands (freezeman-backend freezeman-frontend freezeman-shell)
+  :custom
+  (freezeman-project-root "~/projects/c3g-workspace/freezeman/"))
 
 ;;; Late Init
 
