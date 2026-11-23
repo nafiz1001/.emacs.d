@@ -483,6 +483,12 @@
 
 ;;; Org
 
+(use-package cheatsheet-capture
+  :ensure nil
+  :load-path "lisp/cheatsheet-capture"
+  :commands (cheatsheet-capture-goto-section cheatsheet-capture-row)
+  :hook (org-capture-prepare-finalize . cheatsheet-capture-remove-extra-newline))
+
 (use-package org
   :ensure nil
   :bind (("C-c c" . org-capture)
@@ -493,61 +499,16 @@
   ;; this list only for text search (C-c a s), not for agenda views.
   (org-agenda-text-search-extra-files
    (list (expand-file-name "cheatsheet.org" user-emacs-directory)))
-  ;; test/cheatsheet-capture-tests.el tests template "k" and the
-  ;; org-capture-prepare-finalize hook below.  The tests read both from
-  ;; this block, so run them after a change here.
+  ;; lisp/cheatsheet-capture/cheatsheet-capture-tests.el tests template
+  ;; "k".  The tests read it from this block, so run them after a
+  ;; change here.
   (org-capture-templates
    `(("k" "Key binding" table-line
       (file+function
        ,(expand-file-name "cheatsheet.org" user-emacs-directory)
-       ;; table-line adds the row to the first table under this heading.
-       (lambda ()
-         (let* ((sections (org-map-entries
-                           (lambda () (org-get-heading t t t t))
-                           "LEVEL=1"))
-                (section (completing-read "Section: " sections))
-                (heading (org-find-exact-headline-in-buffer section)))
-           (if heading
-               (goto-char heading)
-             ;; A new section needs the table header too. Without a
-             ;; table, table-line creates one with an empty header.
-             (goto-char (point-max))
-             (unless (bolp)
-               (insert "\n"))
-             (insert "\n")
-             (let ((new-heading (point)))
-               (insert "* " section "\n"
-                       "| Key | Command | Note |\n"
-                       "|-----+---------+------|\n")
-               (goto-char new-heading))))))
-      ;; org-capture calls this in the buffer where capture started, so
-      ;; key-binding sees the keymaps of that buffer's modes.
-      (function
-       (lambda ()
-         (let* ((keys (read-key-sequence "Key: "))
-                (command (key-binding keys))
-                (description (key-description keys))
-                ;; A bare | ends the table cell.
-                (cell (string-replace "|" "\\vert" description)))
-           ;; %? leaves point at the start of the key cell. TAB moves to
-           ;; the next cell. C-c C-c saves the row with an empty note.
-           (format "| %%?~%s~ | %s |  |" cell command)))))))
-  :hook ((org-mode . visual-line-mode)
-         ;; Org bug (9.8.7): a table-line capture buffer is narrowed
-         ;; without the newline that ends the row.  When org-table-align
-         ;; runs in it, such as on TAB, it adds a newline inside the
-         ;; narrowing, and the file gets a blank line after the table.
-         ;; This hook runs while the buffer is still narrowed, so a
-         ;; final newline there is always the extra one.
-         (org-capture-prepare-finalize
-          . (lambda ()
-              (let ((type (org-capture-get :type 'local))
-                    (last-char (char-before (point-max))))
-                (when (and (eq type 'table-line)
-                           (eq last-char ?\n))
-                  (save-excursion
-                    (goto-char (point-max))
-                    (delete-char -1))))))))
+       cheatsheet-capture-goto-section)
+      (function cheatsheet-capture-row))))
+  :hook (org-mode . visual-line-mode))
 
 ;;; Commands
 
