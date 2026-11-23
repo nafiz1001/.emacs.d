@@ -273,6 +273,12 @@
                                         forward-sexp-function
                                         #'treesit-forward-sexp-list))))
 
+;; Emacs has no .env mode. Dotenv syntax is a subset of shell.
+;; The regexp does not match .envrc.
+(use-package sh-script
+  :ensure nil
+  :mode ("\\.env\\(?:\\..*\\)?\\'" . bash-ts-mode))
+
 ;;;; Other
 
 (use-package treesit
@@ -323,6 +329,13 @@
 (use-package apheleia
   :ensure t
   :config
+  ;; .env files use bash-ts-mode for highlighting only. shfmt can
+  ;; change unquoted values, for example a&b to a & b.
+  (add-hook 'apheleia-inhibit-functions
+            (lambda ()
+              (and buffer-file-name
+                   (string-match-p "\\.env\\(?:\\..*\\)?\\'"
+                                   buffer-file-name))))
   (apheleia-global-mode))
 
 ;; ctags
