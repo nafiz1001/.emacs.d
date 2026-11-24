@@ -147,3 +147,8 @@ Default: plain minibuffer, ~C-s~ / ~C-r~ run isearch.
 | ~M-x copy-buffer-file-name~ | copy-buffer-file-name |                          |
 | ~M-x copy-buffer-name~      | copy-buffer-name      |                          |
 | ~M-x unhighlight-all~       | unhighlight-all       | Clear ~M-s h~ highlights |
+
+* core
+| Key   | Command     | Note                                                    |
+|-------+-------------+---------------------------------------------------------|
+| ~M-=~ | count-words | count sentence, count line, count word, count character |
