@@ -1,10 +1,11 @@
-;;; markdown-ts-link-tests.el --- Tests for markdown-ts-mode file#fragment links -*- lexical-binding: t -*-
+;;; markdown-ts-link-tests.el --- Tests for markdown-ts-mode file links -*- lexical-binding: t -*-
 
 ;;; Commentary:
 
 ;; ERT tests for the advice on `markdown-ts--make-link-button' in
 ;; init.el.  A link such as [x](other.md#heading) must open other.md
-;; and move point to the heading.
+;; and move point to the heading.  A percent-encoded path such as
+;; my%20file.md must open "my file.md".
 ;;
 ;; Run:
 ;;   emacs -Q --batch -l test/markdown-ts-link-tests.el \
@@ -52,6 +53,15 @@ the test must see the buffer that the link opened."
   (search-forward "[")
   (push-button (point)))
 
+(defun my/markdown-ts-link-tests--cleanup (directory)
+  "Kill the test buffers and delete DIRECTORY."
+  (dolist (buffer (buffer-list))
+    (let ((file (buffer-file-name buffer)))
+      (when (or (equal (buffer-name buffer) "source.md")
+                (and file (file-in-directory-p file directory)))
+        (kill-buffer buffer))))
+  (delete-directory directory t))
+
 (ert-deftest my/markdown-ts-link-tests-file-fragment ()
   (skip-unless (treesit-ready-p 'markdown t))
   (let* ((directory (file-name-as-directory (make-temp-file "mdts" t)))
@@ -65,10 +75,7 @@ the test must see the buffer that the link opened."
            directory "[go](sub/other.md#fms_env-values)\n")
           (should (equal buffer-file-name target))
           (should (looking-at-p "## FMS_ENV values")))
-      (dolist (buffer (buffer-list))
-        (when (member (buffer-name buffer) '("source.md" "other.md"))
-          (kill-buffer buffer)))
-      (delete-directory directory t))))
+      (my/markdown-ts-link-tests--cleanup directory))))
 
 (ert-deftest my/markdown-ts-link-tests-plain-file ()
   (skip-unless (treesit-ready-p 'markdown t))
@@ -80,9 +87,46 @@ the test must see the buffer that the link opened."
             (insert "# Top\n"))
           (my/markdown-ts-link-tests--push-link directory "[go](other.md)\n")
           (should (equal buffer-file-name target)))
-      (dolist (buffer (buffer-list))
-        (when (member (buffer-name buffer) '("source.md" "other.md"))
-          (kill-buffer buffer)))
-      (delete-directory directory t))))
+      (my/markdown-ts-link-tests--cleanup directory))))
+
+(ert-deftest my/markdown-ts-link-tests-encoded-file ()
+  (skip-unless (treesit-ready-p 'markdown t))
+  (let* ((directory (file-name-as-directory (make-temp-file "mdts" t)))
+         (target (expand-file-name "my filé.md" directory)))
+    (unwind-protect
+        (progn
+          (with-temp-file target
+            (insert "# Top\n"))
+          (my/markdown-ts-link-tests--push-link
+           directory "[go](my%20fil%C3%A9.md)\n")
+          (should (equal buffer-file-name target)))
+      (my/markdown-ts-link-tests--cleanup directory))))
+
+(ert-deftest my/markdown-ts-link-tests-encoded-file-fragment ()
+  (skip-unless (treesit-ready-p 'markdown t))
+  (let* ((directory (file-name-as-directory (make-temp-file "mdts" t)))
+         (target (expand-file-name "my file.md" directory)))
+    (unwind-protect
+        (progn
+          (with-temp-file target
+            (insert "# Top\n\ntext\n\n## Second part\n"))
+          (my/markdown-ts-link-tests--push-link
+           directory "[go](my%20file.md#second-part)\n")
+          (should (equal buffer-file-name target))
+          (should (looking-at-p "## Second part")))
+      (my/markdown-ts-link-tests--cleanup directory))))
+
+;; An empty fragment opens the file and does not signal an error.
+(ert-deftest my/markdown-ts-link-tests-empty-fragment ()
+  (skip-unless (treesit-ready-p 'markdown t))
+  (let* ((directory (file-name-as-directory (make-temp-file "mdts" t)))
+         (target (expand-file-name "other.md" directory)))
+    (unwind-protect
+        (progn
+          (with-temp-file target
+            (insert "# Top\n"))
+          (my/markdown-ts-link-tests--push-link directory "[go](other.md#)\n")
+          (should (equal buffer-file-name target)))
+      (my/markdown-ts-link-tests--cleanup directory))))
 
 ;;; markdown-ts-link-tests.el ends here
