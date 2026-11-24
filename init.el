@@ -247,6 +247,17 @@
 (use-package magit
   :ensure t)
 
+;; Opens file versions in an external diff tool such as difft or meld
+;; (lisp/difftool).  Tests: lisp/difftool/difftool-tests.el.
+(use-package difftool
+  :ensure nil
+  :load-path "lisp/difftool"
+  :commands (difftool-compare difftool-magit-dwim)
+  :init
+  (with-eval-after-load 'magit-diff
+    (transient-append-suffix 'magit-diff "t"
+      '("x" "External tool" difftool-magit-dwim))))
+
 ;; Project commands (C-x p).
 ;; magit-project-status is autoloaded, so this does not wait for Magit to load.
 (use-package project
