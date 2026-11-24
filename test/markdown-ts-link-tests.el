@@ -129,4 +129,26 @@ the test must see the buffer that the link opened."
           (should (equal buffer-file-name target)))
       (my/markdown-ts-link-tests--cleanup directory))))
 
+(ert-deftest my/markdown-ts-link-tests-upstream-file-link ()
+  "Canary: markdown-ts-mode gives a relative URL to `find-file' unchanged.
+If this fails, upstream fixed the bug.  Remove the advice
+`my/markdown-ts-fix-file-link' in the init.el block `markdown-ts-mode',
+its functions, the other tests of this file and this test."
+  (skip-unless (treesit-ready-p 'markdown t))
+  (let ((directory (file-name-as-directory (make-temp-file "mdts" t))))
+    (advice-remove 'markdown-ts--make-link-button
+                   #'my/markdown-ts-fix-file-link)
+    (unwind-protect
+        (progn
+          (my/markdown-ts-link-tests--push-link
+           directory "[go](other.md#top)\n")
+          (should (string-suffix-p "/other.md#top" buffer-file-name))
+          (kill-buffer "source.md")
+          (my/markdown-ts-link-tests--push-link
+           directory "[go](my%20file.md)\n")
+          (should (string-suffix-p "/my%20file.md" buffer-file-name)))
+      (advice-add 'markdown-ts--make-link-button :after
+                  #'my/markdown-ts-fix-file-link)
+      (my/markdown-ts-link-tests--cleanup directory))))
+
 ;;; markdown-ts-link-tests.el ends here

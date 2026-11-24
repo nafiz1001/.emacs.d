@@ -374,6 +374,7 @@
   ;; https://debbugs.gnu.org/20847
   ;; https://debbugs.gnu.org/25246
   ;; https://debbugs.gnu.org/67470
+  ;; Canary test: test/eglot-tests.el
   :hook (eglot-managed-mode . visual-line-mode)
   :config
   ;; :custom-face only sets the defface spec, and the modus theme spec wins over it.
@@ -384,6 +385,7 @@
   ;; The tree-sitter index keeps it. Cost: imenu loses LSP-only
   ;; symbols, such as local variables, and symbol kinds from the server.
   ;; In modes without tree-sitter, imenu uses the major mode's own index.
+  ;; Canary test: test/eglot-tests.el
   (add-to-list 'eglot-stay-out-of 'imenu))
 
 ;; DAP client in the style of Eglot. The key prefix is C-x C-a, as in gud.
@@ -401,6 +403,7 @@
   :ensure nil
   :config
   ;; The default maps json-ts-mode to js-indent-level, which it ignores.
+  ;; Canary test: test/editorconfig-tests.el
   (add-to-list 'editorconfig-indentation-alist
                '(json-ts-mode json-ts-indent-offset))
   (editorconfig-mode 1))
@@ -448,6 +451,7 @@
   ;; signals "Selecting deleted buffer".  An error in kill-buffer-hook
   ;; aborts kill-buffer, so the preview (an eww buffer) cannot be
   ;; killed.  Clear the dead pointer first.
+  ;; Canary test: test/markdown-mode-tests.el
   (defun my/markdown-live-preview-clear-dead-source ()
     (unless (buffer-live-p markdown-live-preview-source-buffer)
       (setq markdown-live-preview-source-buffer nil)))
@@ -460,6 +464,7 @@
 ;; This block comes after markdown-mode, so its .md entry wins.
 (use-package markdown-ts-mode
   :ensure nil
+  ;; Canary test: test/markdown-ts-mode-tests.el
   :mode "\\.md\\'"
   :preface
   ;; Line numbers make each redisplay in this mode allocate about 40%
@@ -479,7 +484,7 @@
   ;; to the heading of the fragment.  The fragment stays encoded: the
   ;; heading slugs of markdown-ts-mode use the same form.
   ;; If a later Emacs fixes this, remove the advice.
-  ;; Tests: test/markdown-ts-link-tests.el
+  ;; Tests and canary test: test/markdown-ts-link-tests.el
   (defun my/markdown-ts-follow-file-link (button)
     (let* ((url (button-get button 'my/markdown-ts-url))
            (hash (string-search "#" url))
