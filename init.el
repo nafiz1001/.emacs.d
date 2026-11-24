@@ -558,8 +558,6 @@
 
 ;;; Projects
 
-;;;; Freezeman
-
 (use-package freezeman
   :ensure nil
   :load-path "lisp/freezeman"
