@@ -339,14 +339,15 @@
 
 (use-package apheleia
   :ensure t
-  :config
+  :preface
   ;; .env files use bash-ts-mode for highlighting only. shfmt can
   ;; change unquoted values, for example a&b to a & b.
-  (add-hook 'apheleia-inhibit-functions
-            (lambda ()
-              (and buffer-file-name
-                   (string-match-p "\\.env\\(?:\\..*\\)?\\'"
-                                   buffer-file-name))))
+  (defun my/apheleia-inhibit-env-file ()
+    (and buffer-file-name
+         (string-match-p "\\.env\\(?:\\..*\\)?\\'"
+                         buffer-file-name)))
+  :config
+  (add-hook 'apheleia-inhibit-functions #'my/apheleia-inhibit-env-file)
   (apheleia-global-mode))
 
 ;; ctags
