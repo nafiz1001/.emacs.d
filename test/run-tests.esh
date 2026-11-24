@@ -1,0 +1,63 @@
+#!/usr/bin/env -S emacs --batch -f eshell-batch-file
+# run-tests.esh --- Run every ERT test file of this repository.
+#
+# Each test file runs in its own `emacs -Q --batch' process, so the
+# files do not share state.  Test files are test/*-tests.el and
+# lisp/*/*-tests.el.  The script prints a summary with the files that
+# failed.
+#
+# Run in Eshell:       source test/run-tests.esh
+# Run from a shell:    test/run-tests.esh
+#
+# In Eshell, use `source', not `.'.  `source' runs the script in a
+# subshell, so its `cd' does not change the directory of your buffer.
+# From a shell, the exit status is 1 if a test file failed.
+#
+# test/eglot-tests.el fetches a debbugs report and can take two
+# minutes.  Without network, its online test skips.
+
+# Run from the repository root.  The -L and -l paths are relative.
+# Text directly after a modifier such as (:h) is a parse error, so use
+# two commands.
+cd $0(:h)
+cd ..
+
+# Eshell variables made with `set' are not visible to Lisp forms, and
+# a `set' in a { } block does not reach the outer scope.  Keep the
+# state in Lisp variables.  A bare `setq VAR nil' stores the string
+# "nil", so use Lisp forms.
+(setq my/run-tests-count 0 my/run-tests-failed nil) > /dev/null
+
+# The loop variable `file' is a Lisp binding, so Lisp forms can use it.
+for file in test/*-tests.el lisp/*/*-tests.el {
+  (setq my/run-tests-count (1+ my/run-tests-count)) > /dev/null
+  echo "==> $file"
+  # -L adds the directory of the file, so a package test can require
+  # its package.  Do not run emacs as the condition of `if': Eshell
+  # discards the output of a { } condition.
+  emacs -Q --batch -L $file(:h) -l $file -f ert-run-tests-batch-and-exit
+  # `if' resets $? before it runs its condition, and a Lisp form does
+  # not expand $?.  The `setq' builtin expands it, so save it first.
+  setq my/run-tests-status $? > /dev/null
+  if (zerop my/run-tests-status) {
+    echo "PASS $file"
+  } {
+    echo "FAIL $file"
+    (push file my/run-tests-failed) > /dev/null
+  }
+}
+
+echo
+(let* ((failed (reverse my/run-tests-failed))
+       (failed-lines (mapconcat (lambda (file) (concat "  " file "\n"))
+                                failed)))
+  (if failed
+      (format "%d of %d test files failed:\n%s"
+              (length failed) my/run-tests-count failed-lines)
+    (format "All %d test files passed.\n" my/run-tests-count)))
+
+# `exit' in Eshell takes no status, and batch Emacs exits with 0.  Only
+# in batch, exit with 1 on failure.  In Eshell, `kill-emacs' would end
+# the session.
+(when (and noninteractive my/run-tests-failed)
+  (kill-emacs 1))
