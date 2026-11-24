@@ -233,6 +233,14 @@
   :custom-face
   (xref-file-header ((t (:weight bold :underline t)))))
 
+;; Jumps to the source of functions and variables.
+(use-package find-func
+  :ensure nil
+  :custom
+  ;; The Arch package has no C source. This checkout of the installed
+  ;; version lets find-function jump to C definitions.
+  (find-function-C-source-directory "~/projects/emacs/src"))
+
 ;;; VC and projects
 
 ;; Git interface.
