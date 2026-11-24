@@ -284,6 +284,12 @@
                 #'treesit-forward-sexp-list))
   :hook (python-ts-mode . my/python-ts-use-list-sexp))
 
+;; Emacs has no .env mode. Dotenv syntax is a subset of shell.
+;; The regexp does not match .envrc.
+(use-package sh-script
+  :ensure nil
+  :mode ("\\.env\\(?:\\..*\\)?\\'" . bash-ts-mode))
+
 ;;;; Other
 
 (use-package treesit
@@ -334,6 +340,13 @@
 (use-package apheleia
   :ensure t
   :config
+  ;; .env files use bash-ts-mode for highlighting only. shfmt can
+  ;; change unquoted values, for example a&b to a & b.
+  (add-hook 'apheleia-inhibit-functions
+            (lambda ()
+              (and buffer-file-name
+                   (string-match-p "\\.env\\(?:\\..*\\)?\\'"
+                                   buffer-file-name))))
   (apheleia-global-mode))
 
 ;; ctags
@@ -500,58 +513,14 @@
 
 ;;; Org
 
+(use-package cheatsheet-capture
+  :ensure nil
+  :load-path "lisp/cheatsheet-capture"
+  :commands (cheatsheet-capture-goto-section cheatsheet-capture-row)
+  :hook (org-capture-prepare-finalize . cheatsheet-capture-remove-extra-newline))
+
 (use-package org
   :ensure nil
-  ;; test/cheatsheet-capture-tests.el tests template "k" with
-  ;; my/cheatsheet-capture-goto-section, my/cheatsheet-capture-key-row
-  ;; and my/org-capture-remove-table-line-newline.  The tests read all of
-  ;; them from this block, so run them after a change here.
-  :preface
-  ;; table-line adds the row to the first table under this heading.
-  (defun my/cheatsheet-capture-goto-section ()
-    (let* ((sections (org-map-entries
-                      (lambda () (org-get-heading t t t t))
-                      "LEVEL=1"))
-           (section (completing-read "Section: " sections))
-           (heading (org-find-exact-headline-in-buffer section)))
-      (if heading
-          (goto-char heading)
-        ;; A new section needs the table header too. Without a
-        ;; table, table-line creates one with an empty header.
-        (goto-char (point-max))
-        (unless (bolp)
-          (insert "\n"))
-        (insert "\n")
-        (let ((new-heading (point)))
-          (insert "* " section "\n"
-                  "| Key | Command | Note |\n"
-                  "|-----+---------+------|\n")
-          (goto-char new-heading)))))
-  ;; org-capture calls this in the buffer where capture started, so
-  ;; key-binding sees the keymaps of that buffer's modes.
-  (defun my/cheatsheet-capture-key-row ()
-    (let* ((keys (read-key-sequence "Key: "))
-           (command (key-binding keys))
-           (description (key-description keys))
-           ;; A bare | ends the table cell.
-           (cell (string-replace "|" "\\vert" description)))
-      ;; %? leaves point at the start of the key cell. TAB moves to
-      ;; the next cell. C-c C-c saves the row with an empty note.
-      (format "| %%?~%s~ | %s |  |" cell command)))
-  ;; Org bug (9.8.7): a table-line capture buffer is narrowed
-  ;; without the newline that ends the row.  When org-table-align
-  ;; runs in it, such as on TAB, it adds a newline inside the
-  ;; narrowing, and the file gets a blank line after the table.
-  ;; This hook runs while the buffer is still narrowed, so a
-  ;; final newline there is always the extra one.
-  (defun my/org-capture-remove-table-line-newline ()
-    (let ((type (org-capture-get :type 'local))
-          (last-char (char-before (point-max))))
-      (when (and (eq type 'table-line)
-                 (eq last-char ?\n))
-        (save-excursion
-          (goto-char (point-max))
-          (delete-char -1)))))
   :bind (("C-c c" . org-capture)
          ("C-c a" . org-agenda))
   :custom
@@ -560,15 +529,16 @@
   ;; this list only for text search (C-c a s), not for agenda views.
   (org-agenda-text-search-extra-files
    (list (expand-file-name "cheatsheet.org" user-emacs-directory)))
+  ;; lisp/cheatsheet-capture/cheatsheet-capture-tests.el tests template
+  ;; "k".  The tests read it from this block, so run them after a
+  ;; change here.
   (org-capture-templates
    `(("k" "Key binding" table-line
       (file+function
        ,(expand-file-name "cheatsheet.org" user-emacs-directory)
-       my/cheatsheet-capture-goto-section)
-      (function my/cheatsheet-capture-key-row))))
-  :hook ((org-mode . visual-line-mode)
-         (org-capture-prepare-finalize
-          . my/org-capture-remove-table-line-newline)))
+       cheatsheet-capture-goto-section)
+      (function cheatsheet-capture-row))))
+  :hook (org-mode . visual-line-mode))
 
 ;;; Commands
 
@@ -588,39 +558,12 @@
 
 ;;;; Freezeman
 
-(defconst freezeman-project-root "~/projects/c3g-workspace/freezeman/")
-
-(defun freezeman-backend ()
-  (interactive)
-  (ignore-error '(error "python manage.py runserver")
-    (let ((kill-buffer-query-functions nil))
-      (kill-buffer "python manage.py runserver")))
-  (async-shell-command
-   (concat "cd " (file-name-concat freezeman-project-root "backend")
-	       " && . ./.venv/bin/activate"
-	       " && python manage.py runserver")
-   "python manage.py runserver"))
-
-(defun freezeman-frontend ()
-  (interactive)
-  (ignore-error '(error "No buffer named npm start")
-    (let ((kill-buffer-query-functions nil))
-      (kill-buffer "npm start")))
-  (async-shell-command
-   (concat "cd " (file-name-concat freezeman-project-root "frontend")
-	       " && npm start")
-   "npm start"))
-
-(defun freezeman-shell ()
-  (interactive)
-  (let ((default-directory freezeman-project-root))
-    (run-python (concat (file-name-concat freezeman-project-root "backend" ".venv" "bin" "python")
-                        " "
-                        (file-name-concat "backend" "manage.py")
-                        " "
-                        "shell")
-                nil
-                t)))
+(use-package freezeman
+  :ensure nil
+  :load-path "lisp/freezeman"
+  :commands (freezeman-backend freezeman-frontend freezeman-shell)
+  :custom
+  (freezeman-project-root "~/projects/c3g-workspace/freezeman/"))
 
 ;;; Late Init
 

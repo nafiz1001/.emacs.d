@@ -2,17 +2,18 @@
 
 ;;; Commentary:
 
-;; ERT tests for the Org capture template "k" in init.el.  The template
-;; adds a key binding to cheatsheet.org.
+;; ERT tests for the Org capture template "k" in init.el and the
+;; functions of cheatsheet-capture.el.  The template adds a key binding
+;; to cheatsheet.org.
 ;;
-;; The tests read the template, the capture hook and their functions
-;; (the :preface) from the org block of init.el, so they test the real
-;; config without loading all of init.el.  Each test
+;; The tests read the template from the org block of init.el, so they
+;; test the real config without loading all of init.el.  Each test
 ;; captures into a small cheat sheet in a temporary directory.
 ;;
 ;; Run all tests from the repository root:
 ;;
-;;   emacs -Q --batch -l test/cheatsheet-capture-tests.el \
+;;   emacs -Q --batch -L lisp/cheatsheet-capture \
+;;         -l lisp/cheatsheet-capture/cheatsheet-capture-tests.el \
 ;;         -f ert-run-tests-batch-and-exit
 
 ;;; Code:
@@ -21,11 +22,12 @@
 (require 'ert-x)
 (require 'org-capture)
 (require 'dired)
+(require 'cheatsheet-capture)
 
 (defconst cheatsheet-capture-tests--init-file
   (let ((test-directory (file-name-directory
                          (or load-file-name buffer-file-name))))
-    (expand-file-name "../init.el" test-directory)))
+    (expand-file-name "../../init.el" test-directory)))
 
 (defconst cheatsheet-capture-tests--sheet
   "#+TITLE: Test Cheat Sheet
@@ -52,25 +54,6 @@
       (goto-char (match-beginning 0))
       (read (current-buffer)))))
 
-(defun cheatsheet-capture-tests--define-preface-functions ()
-  "Evaluate the `defun' forms in the :preface of the org block of init.el."
-  (let* ((org-form (cheatsheet-capture-tests--org-form))
-         (after-preface (cdr (memq :preface org-form)))
-         (preface-forms (seq-take-while #'consp after-preface)))
-    (dolist (form preface-forms)
-      (when (eq (car form) 'defun)
-        (eval form t)))))
-
-(defun cheatsheet-capture-tests--prepare-finalize-hook ()
-  "Return the `org-capture-prepare-finalize-hook' function of init.el.
-The function is a symbol.  Call
-`cheatsheet-capture-tests--define-preface-functions' first to define it."
-  (let* ((org-form (cheatsheet-capture-tests--org-form))
-         (after-hook (memq :hook org-form))
-         (hooks (cadr after-hook))
-         (entry (assq 'org-capture-prepare-finalize hooks)))
-    (cdr entry)))
-
 (defun cheatsheet-capture-tests--templates (directory)
   "Return `org-capture-templates' from the org block of init.el.
 Compute the cheat sheet path with DIRECTORY as `user-emacs-directory'."
@@ -84,19 +67,16 @@ Compute the cheat sheet path with DIRECTORY as `user-emacs-directory'."
 
 (defmacro cheatsheet-capture-tests--with-sheet (&rest body)
   "Run BODY with a temporary cheat sheet and the templates of init.el.
-BODY can use `directory' and `sheet-file'.  The functions in the
-:preface of the org block are defined, and the capture hook of
-init.el is on.  Afterward, kill the buffer of the cheat sheet without
-saving it."
+BODY can use `directory' and `sheet-file'.  The capture hook
+`cheatsheet-capture-remove-extra-newline' is on.  Afterward, kill the
+buffer of the cheat sheet without saving it."
   (declare (indent 0) (debug t))
   `(ert-with-temp-directory directory
-     (cheatsheet-capture-tests--define-preface-functions)
      (let* ((sheet-file (expand-file-name "cheatsheet.org" directory))
             (org-capture-templates
              (cheatsheet-capture-tests--templates directory))
-            (hook-function
-             (cheatsheet-capture-tests--prepare-finalize-hook))
-            (org-capture-prepare-finalize-hook (list hook-function)))
+            (org-capture-prepare-finalize-hook
+             '(cheatsheet-capture-remove-extra-newline)))
        (with-temp-file sheet-file
          (insert cheatsheet-capture-tests--sheet))
        (unwind-protect
@@ -208,8 +188,8 @@ The capture buffer is current afterward."
   "TAB to the note cell does not add a blank line after the table.
 Org 9.8.7 adds one: `org-capture-place-table-line' narrows the capture
 buffer without the final newline of the row, and `org-table-align'
-adds a newline inside the narrowing.  A hook function in init.el
-removes it, so this test loads that function from the org block."
+adds a newline inside the narrowing.  The hook
+`cheatsheet-capture-remove-extra-newline' removes it."
   (cheatsheet-capture-tests--with-sheet
     (cheatsheet-capture-tests--start "dired" "C-x d")
     (org-table-next-field)
