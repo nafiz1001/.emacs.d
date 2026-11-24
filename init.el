@@ -472,7 +472,32 @@
   ;; this, remove the hook. Candidate for M-x report-emacs-bug.
   (defun my/markdown-ts-view-hide-line-numbers ()
     (display-line-numbers-mode -1))
-  :hook (markdown-ts-view-mode . my/markdown-ts-view-hide-line-numbers))
+  ;; Emacs bug (31.1): a link button gives "file.md#frag" to find-file
+  ;; unchanged, so it opens a new empty buffer "file.md#frag".  Split
+  ;; the URL, open the file, then jump to the heading of the fragment.
+  ;; If a later Emacs fixes this, remove the advice.
+  ;; Tests: test/markdown-ts-link-tests.el
+  (defun my/markdown-ts-follow-file-fragment-link (button)
+    (let* ((url (button-get button 'my/markdown-ts-url))
+           (hash (string-search "#" url))
+           (file (substring url 0 hash))
+           (fragment-start (1+ hash))
+           (fragment (substring url fragment-start)))
+      (find-file file)
+      (when (derived-mode-p 'markdown-ts-mode)
+        (markdown-ts--follow-fragment fragment))))
+  (defun my/markdown-ts-fix-file-fragment-link (beg end url)
+    (let ((case-fold-search nil))
+      (when (and (not (string-match-p "\\`[a-z]+:" url))
+                 (string-match-p "\\`[^#]+#." url))
+        (add-text-properties
+         beg end
+         `(action my/markdown-ts-follow-file-fragment-link
+                  my/markdown-ts-url ,url)))))
+  :hook (markdown-ts-view-mode . my/markdown-ts-view-hide-line-numbers)
+  :config
+  (advice-add 'markdown-ts--make-link-button :after
+              #'my/markdown-ts-fix-file-fragment-link))
 
 ;; Folds buffers by headings.
 (use-package outline
