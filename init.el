@@ -489,12 +489,12 @@
                                   (format "*%s* @ %s" command remote)
                                 (format "*%s*" command))))
             `(,command ,buffer-name ,@rest))))))
-  (defun shell-command-name-output-buffer (args)
+  (defun my/shell-command-name-output-buffer (args)
     (interactive #'my/shell-command-output-buffer-args)
     args)
   :config
-  (advice-add 'shell-command :filter-args #'shell-command-name-output-buffer)
-  (advice-add 'async-shell-command :filter-args #'shell-command-name-output-buffer))
+  (advice-add 'shell-command :filter-args #'my/shell-command-name-output-buffer)
+  (advice-add 'async-shell-command :filter-args #'my/shell-command-name-output-buffer))
 
 (use-package proced
   :ensure nil
