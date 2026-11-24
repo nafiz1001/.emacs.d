@@ -14,6 +14,7 @@
 ;; Must be set before use-package loads. Adds a "Packages" group to imenu.
 (setopt use-package-enable-imenu-support t)
 
+;; Keeps the files of packages in etc/ and var/.
 (use-package no-littering
   :ensure t
   :config
@@ -21,59 +22,72 @@
 
 ;;; Core
 
+;; Built-in Emacs settings: core behavior.
 (use-package emacs
   :ensure nil
   :custom
   (mouse-wheel-progressive-speed nil)
+  ;; Scroll just enough to keep point visible.
   (scroll-conservatively 101)
   (delete-by-moving-to-trash t)
   (visible-bell t)
   :config
+  ;; Enable without a confirmation prompt.
   (put 'upcase-region 'disabled nil)
   (put 'narrow-to-region 'disabled nil))
 
+;; Saves minibuffer history between sessions.
 (use-package savehist
   :ensure nil
   :custom
   (savehist-mode t))
 
+;; List of recently opened files.
 (use-package recentf
   :ensure nil
   :custom
   (recentf-mode t))
 
+;; Reopens a file at the last point.
 (use-package saveplace
   :ensure nil
   :custom
   (save-place-mode t))
 
+;; Reloads buffers when their files change on disk.
 (use-package autorevert
   :ensure nil
   :custom
   (auto-revert-verbose nil)
+  ;; Also Dired and other non-file buffers.
   (global-auto-revert-non-file-buffers t)
   (global-auto-revert-mode t))
 
+;; Keeps Emacs fast in files with very long lines.
 (use-package so-long
   :ensure nil
   :custom
   (global-so-long-mode t))
 
+;; Repeats some commands with their last key, for example C-x o o.
 (use-package repeat
   :ensure nil
   :custom
   (repeat-mode t))
 
+;; Mouse support in terminal frames.
 (use-package xt-mouse
   :ensure nil
   :custom
   (xterm-mouse-mode t))
 
+;; System clipboard in terminal frames.
 (use-package xclip
   :ensure t
   :config
   (xclip-mode 1))
 
+;; Draws ASCII art with the mouse or keys.
 (use-package artist
   :ensure nil
   :preface
@@ -83,43 +97,51 @@
 
 ;;; UI
 
+;; Built-in Emacs settings: UI.
 (use-package emacs
   :ensure nil
   :custom
   (custom-enabled-themes '(modus-vivendi))
   (inhibit-startup-screen t))
 
+;; Basic editing commands and mode line indicators.
 (use-package simple
   :ensure nil
   :custom
   (column-number-mode t)
   (size-indication-mode t))
 
+;; Line numbers in buffers.
 (use-package display-line-numbers
   :ensure nil
   :custom
   (global-display-line-numbers-mode t))
 
+;; Tool bar of graphical frames.
 (use-package tool-bar
   :ensure nil
   :custom
   (tool-bar-mode nil))
 
+;; Tab bar for window configurations.
 (use-package tab-bar
   :ensure nil
   :custom
   (tab-bar-mode t))
 
+;; Shows the keys that can follow a prefix key.
 (use-package which-key
   :ensure nil
   :custom
   (which-key-mode t))
 
+;; Mouse commands, including the right-click context menu.
 (use-package mouse
   :ensure nil
   :custom
   (context-menu-mode t))
 
+;; Start buffer with recent files, projects and bookmarks.
 (use-package dashboard
   :ensure t
   :preface
@@ -140,6 +162,7 @@
 
 ;;; Completion
 
+;; Minibuffer input and completion.
 (use-package minibuffer
   :ensure nil
   :custom
@@ -150,13 +173,16 @@
   (read-buffer-completion-ignore-case t)
   (read-file-name-completion-ignore-case t))
 
+;; Completion UI in the minibuffer (Fido).
 (use-package icomplete
   :ensure nil
   :custom
+  ;; icomplete with flex matching.
   (fido-mode t))
 
 ;;; Files
 
+;; File manager.
 (use-package dired
   :ensure nil
   :preface
@@ -164,34 +190,42 @@
     (interactive)
     (dired-copy-filename-as-kill 0))
   :custom
+  ;; Copy and rename target the other Dired window.
   (dired-dwim-target t)
   (dired-listing-switches "-alh --group-directories-first")
+  ;; Keep one Dired buffer.
   (dired-kill-when-opening-new-dired-buffer t)
   :bind (:map dired-mode-map
+              ;; Copy the absolute file name.
               ("W" . my/dired-copy-absolute-file-name))
   :config
+  ;; Enable `a' without a prompt.
   (put 'dired-find-alternate-file 'disabled nil))
 
+;; Rename files and edit permissions as text in Dired.
 (use-package wdired
   :ensure nil
   :custom
   (wdired-allow-to-change-permissions t))
 
-;; dired font-lock
+;; Extra colors in Dired.
 (use-package diredfl
   :ensure t
   :config
   (diredfl-global-mode))
 
+;; Opens very large files in parts.
 (use-package vlf
   :ensure t)
 
 ;;; Navigation
 
+;; Selects a window by number.
 (use-package ace-window
   :ensure t
   :bind ("C-x o" . ace-window))
 
+;; Find definitions and references, and search files.
 (use-package xref
   :ensure nil
   :custom
@@ -201,9 +235,11 @@
 
 ;;; VC and projects
 
+;; Git interface.
 (use-package magit
   :ensure t)
 
+;; Project commands (C-x p).
 ;; magit-project-status is autoloaded, so this does not wait for Magit to load.
 (use-package project
   :ensure nil
@@ -218,6 +254,7 @@
     (let ((non-essential t))
       (cl-call-next-method))))
 
+;; Marks changed lines in the fringe and in Dired.
 (use-package diff-hl
   :ensure t
   :vc (diff-hl :url "https://github.com/dgutov/diff-hl"
@@ -227,6 +264,7 @@
   :hook ((magit-post-refresh . diff-hl-magit-post-refresh)
          (dired-mode . diff-hl-dired-mode))
   :custom
+  ;; Off in TRAMP buffers.
   (diff-hl-disable-on-remote t)
   :config
   (global-diff-hl-mode))
@@ -235,6 +273,7 @@
 
 ;;;; Indentation
 
+;; Built-in Emacs settings: indentation.
 ;; Precedence: .editorconfig and file variables, then tree-sitter
 ;; detection, then the default offset of the major mode.
 (use-package emacs
@@ -243,12 +282,15 @@
   (indent-tabs-mode nil)
   (tab-width 4))
 
+;; Guesses the indent offset of a file from tree-sitter rules
+;; (lisp/ts-indent-guess).
 (use-package ts-indent-guess
   :ensure nil
   :load-path "lisp/ts-indent-guess"
   :config
   (ts-indent-guess-mode 1))
 
+;; Tree-sitter mode for C.
 ;; Detection does not find the brace style. The default GNU style indents
 ;; a brace on its own line one extra level.
 (use-package c-ts-mode
@@ -259,6 +301,7 @@
   ;; extra level. bsd does not, and it keeps K&R code unchanged.
   (c-ts-mode-indent-style 'bsd))
 
+;; CC mode for C, C++, Java and AWK.
 (use-package cc-mode
   :ensure nil
   :defer t
@@ -268,6 +311,7 @@
                      (awk-mode . "awk")
                      (other . "stroustrup"))))
 
+;; Python modes.
 (use-package python
   :ensure nil
   :preface
@@ -284,6 +328,7 @@
                 #'treesit-forward-sexp-list))
   :hook (python-ts-mode . my/python-ts-use-list-sexp))
 
+;; Shell script modes.
 ;; Emacs has no .env mode. Dotenv syntax is a subset of shell.
 ;; The regexp does not match .envrc.
 (use-package sh-script
@@ -292,12 +337,15 @@
 
 ;;;; Other
 
+;; Tree-sitter parsing for major modes.
 (use-package treesit
   :ensure nil
   :custom
+  ;; Use tree-sitter modes for all languages.
   (treesit-enabled-modes t)
   (treesit-auto-install-grammar 'ask))
 
+;; LSP client.
 (use-package eglot
   :ensure nil
   :after (treesit)
@@ -329,6 +377,7 @@
   ;; Toggle breakpoints with a mouse click in the left fringe or margin.
   (dape-breakpoint-global-mode 1))
 
+;; Applies .editorconfig settings.
 (use-package editorconfig
   :ensure nil
   :config
@@ -337,6 +386,7 @@
                '(json-ts-mode json-ts-indent-offset))
   (editorconfig-mode 1))
 
+;; Formats buffers on save with external formatters.
 (use-package apheleia
   :ensure t
   :preface
@@ -350,21 +400,24 @@
   (add-hook 'apheleia-inhibit-functions #'my/apheleia-inhibit-env-file)
   (apheleia-global-mode))
 
-;; ctags
+;; Ctags completion and jump to definition.
 (use-package citre
   :ensure t
   :config
   (require 'citre-config))
 
+;; Highlights TODO, FIXME and similar keywords.
 (use-package hl-todo
   :ensure t
   :hook (prog-mode))
 
+;; Inserts closing brackets and quotes.
 (use-package elec-pair
   :ensure nil
   :custom
   (electric-pair-mode t))
 
+;; Markdown modes.
 ;; Eglot renders LSP documentation with gfm-view-mode from markdown-mode.
 ;; Without it, Eglot shows raw markdown in text-mode.
 (use-package markdown-mode
@@ -383,6 +436,7 @@
   (advice-add 'markdown-live-preview-remove-on-kill :before
               #'my/markdown-live-preview-clear-dead-source))
 
+;; Tree-sitter mode for Markdown.
 ;; markdown-ts-mode does not add itself to auto-mode-alist.
 ;; This block comes after markdown-mode, so its .md entry wins.
 (use-package markdown-ts-mode
@@ -401,6 +455,7 @@
     (display-line-numbers-mode -1))
   :hook (markdown-ts-view-mode . my/markdown-ts-view-hide-line-numbers))
 
+;; Folds buffers by headings.
 (use-package outline
   :ensure nil
   :preface
@@ -418,6 +473,7 @@
   :hook ((emacs-lisp-mode . outline-minor-mode)
          (after-change-major-mode . my/outline-enable-for-treesit-headings)))
 
+;; Lisp modes.
 (use-package lisp-mode
   :ensure nil
   :config
@@ -428,9 +484,11 @@
 
 ;;; Remote and shells
 
+;; Edit remote files and run remote commands.
 (use-package tramp
   :ensure nil
   :custom
+  ;; Do not reuse SSH ControlMaster connections.
   (tramp-use-connection-share nil)
   :config
   ;; configurations for flatpak Emacs
@@ -453,6 +511,7 @@
      '(:application tramp :protocol "podman")
      'tramp-podman-own-path)))
 
+;; Base mode for shell and REPL buffers.
 (use-package comint
   :ensure nil
   :custom
@@ -461,6 +520,7 @@
   ;; Shell buffers grow with no limit. Keep only the last lines.
   (add-hook 'comint-output-filter-functions #'comint-truncate-buffer))
 
+;; Eshell buffers.
 ;; `esh-mode' defines both variables, and `eshell' does not load it.
 (use-package esh-mode
   :ensure nil
@@ -470,6 +530,7 @@
   ;; Eshell buffers grow with no limit. Keep only the last lines.
   (add-hook 'eshell-output-filter-functions #'eshell-truncate-buffer))
 
+;; Shell command output buffers.
 (use-package simple
   :ensure nil
   :preface
@@ -496,14 +557,18 @@
   (advice-add 'shell-command :filter-args #'my/shell-command-name-output-buffer)
   (advice-add 'async-shell-command :filter-args #'my/shell-command-name-output-buffer))
 
+;; Process list, like top.
 (use-package proced
   :ensure nil
   :custom
+  ;; Show processes of the remote host in a TRAMP directory.
   (proced-show-remote-processes t))
 
+;; Terminal for shells that keeps normal Emacs editing.
 (use-package mistty
   :ensure t)
 
+;; Manages Docker and Podman containers.
 (use-package docker
   :ensure t
   :custom
@@ -515,12 +580,15 @@
 
 ;;; Org
 
+;; Org capture of key bindings into cheatsheet.org
+;; (lisp/cheatsheet-capture).
 (use-package cheatsheet-capture
   :ensure nil
   :load-path "lisp/cheatsheet-capture"
   :commands (cheatsheet-capture-goto-section cheatsheet-capture-row)
   :hook (org-capture-prepare-finalize . cheatsheet-capture-remove-extra-newline))
 
+;; Notes, tasks and agenda.
 (use-package org
   :ensure nil
   :bind (("C-c c" . org-capture)
@@ -558,6 +626,8 @@
 
 ;;; Projects
 
+;; Commands to run the Freezeman backend, frontend and shell
+;; (lisp/freezeman).
 (use-package freezeman
   :ensure nil
   :load-path "lisp/freezeman"
@@ -567,6 +637,7 @@
 
 ;;; Late Init
 
+;; Loads the direnv environment per buffer.
 ;; envrc must enable after the other global modes, so that its hook runs
 ;; first and sets the buffer environment before Eglot starts a server.
 (use-package envrc
