@@ -472,7 +472,7 @@
 
 (use-package simple
   :ensure nil
-  :config
+  :preface
   ;; Several commands share "*Async Shell Command*" or
   ;; "*Shell Command Output*".  Name the output buffer after the
   ;; command.  Change only interactive calls, because many Lisp callers
@@ -492,6 +492,7 @@
   (defun shell-command-name-output-buffer (args)
     (interactive #'my/shell-command-output-buffer-args)
     args)
+  :config
   (advice-add 'shell-command :filter-args #'shell-command-name-output-buffer)
   (advice-add 'async-shell-command :filter-args #'shell-command-name-output-buffer))
 
