@@ -78,20 +78,36 @@ Bind `calls' to the list of (FUNCTION . ARGS) in call order, with
       (should (equal (freezeman--root) "/srv/freezeman/")))))
 
 (ert-deftest freezeman-tests-backend-command ()
-  (let* ((freezeman-project-root "/srv/freezeman")
+  (let* ((system-type 'gnu/linux)
+         (freezeman-project-root "/srv/freezeman")
          (calls (freezeman-tests--with-stubs (freezeman-backend))))
-    (should (equal (butlast (car calls))
+    (should (equal (car calls)
                    '(async-shell-command
-                     "cd /srv/freezeman/backend && . ./.venv/bin/activate && python manage.py runserver"
-                     "python manage.py runserver")))))
+                     "/srv/freezeman/backend/.venv/bin/python manage.py runserver"
+                     "python manage.py runserver"
+                     "/srv/freezeman/backend/")))))
+
+(ert-deftest freezeman-tests-backend-command-windows ()
+  "On native Windows, the backend runs Scripts\\python.exe of the venv.
+The space in the root tests the quoting for cmd.exe."
+  (cl-letf (((symbol-function 'w32-shell-dos-semantics) (lambda () t)))
+    (let* ((system-type 'windows-nt)
+           (freezeman-project-root "/srv/free man")
+           (calls (freezeman-tests--with-stubs (freezeman-backend))))
+      (should (equal (car calls)
+                     '(async-shell-command
+                       "\"/srv/free man/backend/.venv/Scripts/python.exe\" manage.py runserver"
+                       "python manage.py runserver"
+                       "/srv/free man/backend/"))))))
 
 (ert-deftest freezeman-tests-frontend-command ()
   (let* ((freezeman-project-root "/srv/freezeman")
          (calls (freezeman-tests--with-stubs (freezeman-frontend))))
-    (should (equal (butlast (car calls))
+    (should (equal (car calls)
                    '(async-shell-command
-                     "cd /srv/freezeman/frontend && npm start"
-                     "npm start")))))
+                     "npm start"
+                     "npm start"
+                     "/srv/freezeman/frontend/")))))
 
 (ert-deftest freezeman-tests-kill-old-buffer ()
   (let ((freezeman-project-root "/srv/freezeman"))
@@ -104,11 +120,23 @@ Bind `calls' to the list of (FUNCTION . ARGS) in call order, with
       (freezeman-tests--with-stubs (funcall (car case))))))
 
 (ert-deftest freezeman-tests-shell-command ()
-  (let* ((freezeman-project-root "/srv/freezeman")
+  (let* ((system-type 'gnu/linux)
+         (freezeman-project-root "/srv/freezeman")
          (calls (freezeman-tests--with-stubs (freezeman-shell))))
     (should (equal (car calls)
                    '(run-python
                      "/srv/freezeman/backend/.venv/bin/python backend/manage.py shell"
                      nil t "/srv/freezeman/")))))
+
+(ert-deftest freezeman-tests-shell-command-windows ()
+  "On native Windows, the shell runs Scripts\\python.exe of the venv."
+  (cl-letf (((symbol-function 'w32-shell-dos-semantics) (lambda () t)))
+    (let* ((system-type 'windows-nt)
+           (freezeman-project-root "/srv/free man")
+           (calls (freezeman-tests--with-stubs (freezeman-shell))))
+      (should (equal (car calls)
+                     '(run-python
+                       "\"/srv/free man/backend/.venv/Scripts/python.exe\" backend/manage.py shell"
+                       nil t "/srv/free man/"))))))
 
 ;;; freezeman-tests.el ends here

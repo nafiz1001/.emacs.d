@@ -14,6 +14,7 @@
 ;; - `freezeman-shell': Django shell in an inferior Python buffer.
 ;;
 ;; The backend commands expect a virtual environment in backend/.venv.
+;; The commands work on Linux, macOS and native Windows.
 ;;
 ;; The commands find the checkout as follows:
 ;; 1. If `freezeman-project-root' is set, they use it.
@@ -65,7 +66,20 @@ current project if it is a Freezeman checkout."
             (file-name-as-directory expanded))
         (user-error "Not in a Freezeman project.  Set `freezeman-project-root'")))))
 
+(defun freezeman--venv-python (root)
+  "Return the Python of the virtual environment backend/.venv of ROOT.
+A venv on native Windows has Scripts\\python.exe.  Elsewhere it has
+bin/python."
+  (if (eq system-type 'windows-nt)
+      (file-name-concat root "backend" ".venv" "Scripts" "python.exe")
+    (file-name-concat root "backend" ".venv" "bin" "python")))
+
 ;; lisp/freezeman/freezeman-tests.el tests these commands.
+;;
+;; The commands set `default-directory' instead of a "cd DIR &&" prefix,
+;; and run the Python of the venv instead of sourcing its activate
+;; script.  The activate script needs a POSIX shell, and
+;; `async-shell-command' uses cmd.exe on native Windows.
 
 ;;;###autoload
 (defun freezeman-backend ()
@@ -73,10 +87,10 @@ current project if it is a Freezeman checkout."
 Kill the buffer of an earlier server first."
   (interactive)
   (let* ((root (freezeman--root))
-         (backend-dir (file-name-concat root "backend"))
-         (command (concat "cd " backend-dir
-                          " && . ./.venv/bin/activate"
-                          " && python manage.py runserver"))
+         (default-directory (file-name-concat root "backend/"))
+         (python (freezeman--venv-python root))
+         (quoted-python (shell-quote-argument python))
+         (command (concat quoted-python " manage.py runserver"))
          (buffer (get-buffer "python manage.py runserver")))
     (when buffer
       (let ((kill-buffer-query-functions nil))
@@ -89,13 +103,12 @@ Kill the buffer of an earlier server first."
 Kill the buffer of an earlier run first."
   (interactive)
   (let* ((root (freezeman--root))
-         (frontend-dir (file-name-concat root "frontend"))
-         (command (concat "cd " frontend-dir " && npm start"))
+         (default-directory (file-name-concat root "frontend/"))
          (buffer (get-buffer "npm start")))
     (when buffer
       (let ((kill-buffer-query-functions nil))
         (kill-buffer buffer)))
-    (async-shell-command command "npm start")))
+    (async-shell-command "npm start" "npm start")))
 
 ;;;###autoload
 (defun freezeman-shell ()
@@ -103,9 +116,10 @@ Kill the buffer of an earlier run first."
   (interactive)
   (let* ((root (freezeman--root))
          (default-directory root)
-         (python (file-name-concat root "backend" ".venv" "bin" "python"))
+         (python (freezeman--venv-python root))
+         (quoted-python (shell-quote-argument python))
          (manage (file-name-concat "backend" "manage.py"))
-         (command (concat python " " manage " shell")))
+         (command (concat quoted-python " " manage " shell")))
     (run-python command nil t)))
 
 (provide 'freezeman)
