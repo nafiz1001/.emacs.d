@@ -236,10 +236,13 @@
 ;; Jumps to the source of functions and variables.
 (use-package find-func
   :ensure nil
-  :custom
+  :config
   ;; The Arch package has no C source. This checkout of the installed
   ;; version lets find-function jump to C definitions.
-  (find-function-C-source-directory "~/projects/emacs/src"))
+  ;; find-function-C-source-directory is a defvar, not a defcustom.
+  ;; :custom sets it before find-func loads, and the defvar then
+  ;; replaces the value with nil.
+  (setq find-function-C-source-directory "~/projects/emacs/src"))
 
 ;;; VC and projects
 
