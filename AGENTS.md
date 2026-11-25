@@ -96,3 +96,14 @@ Example:
        (trimmed (string-trim line)))
   (message "%s" trimmed))
 ```
+
+### Portability
+The config runs on Linux (any distribution), macOS (GUI and terminal) and native Windows. Write each change so that it works on all of them.
+- If code needs an external program, test for it with `executable-find`. If the program is missing, keep the Emacs default or skip the feature. Do not signal an error at startup.
+- Test `system-type` only if the OS itself is the dependency. Examples: a pty, flatpak, the PATH of macOS GUI Emacs. Do not test for a Linux distribution.
+- To skip a package on an OS, wrap the `use-package` form in `when` or `unless`. Do not use `:if`. Reason: use-package installs an `:ensure` package even if `:if` is nil.
+- If you use an option that only GNU tools accept, add a fallback. Example: `ls --group-directories-first` fails with BSD `ls` on macOS.
+- Do not hard-code Unix paths such as `/tmp` or `/usr/bin`. Use `temporary-file-directory` and `executable-find`. Build file names with `expand-file-name` or `file-name-concat`.
+- To run a program, prefer `call-process` or `make-process` with a list of arguments. A shell string for `shell-command` runs in cmd.exe on Windows.
+- If a setting uses a path that exists only on one machine, set it only if `file-directory-p` or `file-exists-p` is true.
+- To test a branch for another system, stub `executable-find` with `cl-letf` and bind `system-type` with `let` in an ERT test.
