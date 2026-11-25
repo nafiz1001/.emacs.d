@@ -237,12 +237,18 @@
 (use-package find-func
   :ensure nil
   :config
-  ;; The Arch package has no C source. This checkout of the installed
-  ;; version lets find-function jump to C definitions.
+  ;; Packaged builds of Emacs (snap, Arch and others) often have no C
+  ;; source.  This checkout of the installed version lets
+  ;; find-function jump to C definitions.
   ;; find-function-C-source-directory is a defvar, not a defcustom.
   ;; :custom sets it before find-func loads, and the defvar then
   ;; replaces the value with nil.
-  (setq find-function-C-source-directory "~/projects/emacs/src"))
+  (let ((checkout "~/projects/emacs/src"))
+    ;; On a system without the checkout, keep the default.  Then
+    ;; find-function asks for the directory and does not signal an
+    ;; error.
+    (when (file-directory-p checkout)
+      (setq find-function-C-source-directory checkout))))
 
 ;;; VC and projects
 
