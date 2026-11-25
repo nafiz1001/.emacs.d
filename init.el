@@ -20,6 +20,19 @@
   :config
   (no-littering-theme-backups))
 
+;; Emacs.app started from the Dock, or a daemon started by launchd, does
+;; not get the PATH of the login shell.  Then git, rg, direnv and LSP
+;; servers are not found.  Emacs in a terminal inherits the PATH.
+;; `when', not :if: use-package installs an :ensure package even if
+;; :if is nil.
+(when (and (eq system-type 'darwin)
+           (or (memq window-system '(mac ns))
+               (daemonp)))
+  (use-package exec-path-from-shell
+    :ensure t
+    :config
+    (exec-path-from-shell-initialize)))
+
 ;;; Core
 
 ;; Built-in Emacs settings: core behavior.
@@ -85,7 +98,10 @@
 (use-package xclip
   :ensure t
   :config
-  (xclip-mode 1))
+  ;; xclip-mode signals an error if the clipboard program is missing,
+  ;; for example on native Windows or on Linux without xclip.
+  (when (executable-find xclip-program)
+    (xclip-mode 1)))
 
 ;; Draws ASCII art with the mouse or keys.
 (use-package artist
@@ -200,7 +216,21 @@
               ("W" . my/dired-copy-absolute-file-name))
   :config
   ;; Enable `a' without a prompt.
-  (put 'dired-find-alternate-file 'disabled nil))
+  (put 'dired-find-alternate-file 'disabled nil)
+  ;; --group-directories-first needs GNU ls.  The BSD ls of macOS
+  ;; signals an error on it.  On macOS, use GNU ls from coreutils (gls)
+  ;; if it exists.  Else use ls-lisp, the Lisp emulation of ls.  Native
+  ;; Windows has no ls and uses ls-lisp by default.
+  (let ((gls (and (eq system-type 'darwin)
+                  (executable-find "gls"))))
+    (cond
+     (gls
+      (setopt insert-directory-program gls))
+     ((memq system-type '(darwin windows-nt))
+      (require 'ls-lisp)
+      (setopt ls-lisp-use-insert-directory-program nil
+              ls-lisp-dirs-first t
+              dired-listing-switches "-alh")))))
 
 ;; Rename files and edit permissions as text in Dired.
 (use-package wdired
@@ -228,10 +258,12 @@
 ;; Find definitions and references, and search files.
 (use-package xref
   :ensure nil
-  :custom
-  (xref-search-program 'ripgrep)
   :custom-face
-  (xref-file-header ((t (:weight bold :underline t)))))
+  (xref-file-header ((t (:weight bold :underline t))))
+  :config
+  ;; Without rg, keep the default grep.
+  (when (executable-find "rg")
+    (setopt xref-search-program 'ripgrep)))
 
 ;; Jumps to the source of functions and variables.
 (use-package find-func
@@ -560,15 +592,17 @@
   (tramp-use-connection-share nil)
   :config
   ;; configurations for flatpak Emacs
-  (if (not (assoc "toolbox" tramp-methods))
-      (push
-       (cons
-	    "toolbox"
-	    '((tramp-login-program "flatpak-spawn --host toolbox")
-	      (tramp-login-args (("enter" "-c") ("%h")))
-	      (tramp-remote-shell "/bin/sh")
-	      (tramp-remote-shell-args ("-i") ("-c"))))
-       tramp-methods))
+  ;; flatpak-spawn and toolbox exist only on Linux.
+  (when (and (eq system-type 'gnu/linux)
+             (not (assoc "toolbox" tramp-methods)))
+    (push
+     (cons
+	  "toolbox"
+	  '((tramp-login-program "flatpak-spawn --host toolbox")
+	    (tramp-login-args (("enter" "-c") ("%h")))
+	    (tramp-remote-shell "/bin/sh")
+	    (tramp-remote-shell-args ("-i") ("-c"))))
+     tramp-methods))
   ;; TRAMP replaces the remote PATH with `tramp-remote-path', so a container
   ;; loses PATH entries of its image, such as a venv. Read the PATH of a
   ;; login shell in podman containers only.
@@ -633,8 +667,12 @@
   (proced-show-remote-processes t))
 
 ;; Terminal for shells that keeps normal Emacs editing.
-(use-package mistty
-  :ensure t)
+;; MisTTY needs a pty, which native Windows Emacs does not have.
+;; `unless', not :if: use-package installs an :ensure package even if
+;; :if is nil.
+(unless (eq system-type 'windows-nt)
+  (use-package mistty
+    :ensure t))
 
 ;; Manages Docker and Podman containers.
 (use-package docker
@@ -710,4 +748,11 @@
 ;; first and sets the buffer environment before Eglot starts a server.
 (use-package envrc
   :ensure t
-  :hook (after-init . envrc-global-mode))
+  :preface
+  ;; envrc needs the direnv program.  Native Windows and a new macOS
+  ;; install do not have it.  `envrc-direnv-executable' is not bound
+  ;; yet, because envrc loads only when the mode starts.
+  (defun my/envrc-enable-if-direnv ()
+    (when (executable-find "direnv")
+      (envrc-global-mode 1)))
+  :hook (after-init . my/envrc-enable-if-direnv))
