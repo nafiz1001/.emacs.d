@@ -737,9 +737,7 @@
 (use-package freezeman
   :ensure nil
   :load-path "lisp/freezeman"
-  :commands (freezeman-backend freezeman-frontend freezeman-shell)
-  :custom
-  (freezeman-project-root "~/projects/c3g-workspace/freezeman/"))
+  :commands (freezeman-backend freezeman-frontend freezeman-shell))
 
 ;;; Late Init
 

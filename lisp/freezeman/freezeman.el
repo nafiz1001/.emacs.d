@@ -13,7 +13,8 @@
 ;; - `freezeman-frontend': "npm start" in the frontend.
 ;; - `freezeman-shell': Django shell in an inferior Python buffer.
 ;;
-;; The backend commands expect a virtual environment in backend/.venv.
+;; The backend commands use the virtual environment in
+;; `freezeman-venv-directory' (default backend/env).
 ;; The commands work on Linux, macOS and native Windows.
 ;;
 ;; The commands find the checkout as follows:
@@ -43,6 +44,13 @@ If nil, the commands use the root of the current project if it is a
 Freezeman checkout."
   :type '(choice (const :tag "Current project" nil) directory))
 
+;; lisp/freezeman/freezeman-tests.el tests this option.
+(defcustom freezeman-venv-directory "backend/env"
+  "Directory of the virtual environment of the backend.
+A relative name is relative to the root of the Freezeman checkout.
+An absolute name is used as it is."
+  :type 'directory)
+
 (defun freezeman--root ()
   "Return the root directory of the Freezeman checkout.
 Use `freezeman-project-root' if it is set.  Else use the root of the
@@ -67,12 +75,13 @@ current project if it is a Freezeman checkout."
         (user-error "Not in a Freezeman project.  Set `freezeman-project-root'")))))
 
 (defun freezeman--venv-python (root)
-  "Return the Python of the virtual environment backend/.venv of ROOT.
-A venv on native Windows has Scripts\\python.exe.  Elsewhere it has
-bin/python."
-  (if (eq system-type 'windows-nt)
-      (file-name-concat root "backend" ".venv" "Scripts" "python.exe")
-    (file-name-concat root "backend" ".venv" "bin" "python")))
+  "Return the Python of the virtual environment of ROOT.
+`freezeman-venv-directory' gives the venv.  A venv on native Windows
+has Scripts\\python.exe.  Elsewhere it has bin/python."
+  (let ((venv (expand-file-name freezeman-venv-directory root)))
+    (if (eq system-type 'windows-nt)
+        (file-name-concat venv "Scripts" "python.exe")
+      (file-name-concat venv "bin" "python"))))
 
 ;; lisp/freezeman/freezeman-tests.el tests these commands.
 ;;

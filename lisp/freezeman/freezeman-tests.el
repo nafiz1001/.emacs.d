@@ -83,7 +83,7 @@ Bind `calls' to the list of (FUNCTION . ARGS) in call order, with
          (calls (freezeman-tests--with-stubs (freezeman-backend))))
     (should (equal (car calls)
                    '(async-shell-command
-                     "/srv/freezeman/backend/.venv/bin/python manage.py runserver"
+                     "/srv/freezeman/backend/env/bin/python manage.py runserver"
                      "python manage.py runserver"
                      "/srv/freezeman/backend/")))))
 
@@ -96,9 +96,21 @@ The space in the root tests the quoting for cmd.exe."
            (calls (freezeman-tests--with-stubs (freezeman-backend))))
       (should (equal (car calls)
                      '(async-shell-command
-                       "\"/srv/free man/backend/.venv/Scripts/python.exe\" manage.py runserver"
+                       "\"/srv/free man/backend/env/Scripts/python.exe\" manage.py runserver"
                        "python manage.py runserver"
                        "/srv/free man/backend/"))))))
+
+(ert-deftest freezeman-tests-custom-venv ()
+  "A relative venv is relative to the root.  An absolute venv stays."
+  (let ((system-type 'gnu/linux)
+        (freezeman-project-root "/srv/freezeman"))
+    (dolist (case '((".venv" . "/srv/freezeman/.venv/bin/python")
+                    ("/opt/venv" . "/opt/venv/bin/python")))
+      (let* ((freezeman-venv-directory (car case))
+             (calls (freezeman-tests--with-stubs (freezeman-backend)))
+             (command (nth 1 (car calls)))
+             (expected (concat (cdr case) " manage.py runserver")))
+        (should (equal command expected))))))
 
 (ert-deftest freezeman-tests-frontend-command ()
   (let* ((freezeman-project-root "/srv/freezeman")
@@ -125,7 +137,7 @@ The space in the root tests the quoting for cmd.exe."
          (calls (freezeman-tests--with-stubs (freezeman-shell))))
     (should (equal (car calls)
                    '(run-python
-                     "/srv/freezeman/backend/.venv/bin/python backend/manage.py shell"
+                     "/srv/freezeman/backend/env/bin/python backend/manage.py shell"
                      nil t "/srv/freezeman/")))))
 
 (ert-deftest freezeman-tests-shell-command-windows ()
@@ -136,7 +148,7 @@ The space in the root tests the quoting for cmd.exe."
            (calls (freezeman-tests--with-stubs (freezeman-shell))))
       (should (equal (car calls)
                      '(run-python
-                       "\"/srv/free man/backend/.venv/Scripts/python.exe\" backend/manage.py shell"
+                       "\"/srv/free man/backend/env/Scripts/python.exe\" backend/manage.py shell"
                        nil t "/srv/free man/"))))))
 
 ;;; freezeman-tests.el ends here
