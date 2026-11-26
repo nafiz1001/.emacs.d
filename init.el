@@ -700,7 +700,6 @@
   :bind (("C-c c" . org-capture)
          ("C-c a" . org-agenda))
   :custom
-  (org-directory "~/Documents/Org")
   ;; Not in org-agenda-files: the cheat sheet has no tasks.  Org reads
   ;; this list only for text search (C-c a s), not for agenda views.
   (org-agenda-text-search-extra-files
