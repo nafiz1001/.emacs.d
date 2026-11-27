@@ -1,0 +1,28 @@
+# Compose override for Emacs (lisp/freezeman). It adds the language servers basedpyright and
+# typescript-language-server to "dev" through a named volume, so they survive container
+# re-creation and image rebuilds without a change to the Containerfile of Freezeman.
+#
+# freezeman.el passes this file after oci/compose.yaml and oci/compose.dev.yaml
+# (`freezeman-compose-extra-files'). podman-compose takes the project directory, the project
+# name and .env from oci/compose.yaml. In a terminal, in oci/ of the checkout, pass the same
+# files, or `up` recreates "dev" without this volume:
+#
+#   podman-compose -f compose.yaml -f compose.dev.yaml -f <emacs-dir>/lisp/freezeman/compose.emacs.yaml up -d
+#
+# Install the servers once:
+#
+#   podman-compose -f compose.yaml -f compose.dev.yaml -f <emacs-dir>/lisp/freezeman/compose.emacs.yaml \
+#     exec dev npm i -g --prefix /opt/lsp basedpyright typescript-language-server
+
+services:
+  dev:
+    environment:
+      # Compose replaces the PATH of the image, so repeat the full value.
+      PATH: /opt/lsp/bin:/opt/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+    volumes:
+      - type: volume
+        source: lsp_tools
+        target: /opt/lsp
+
+volumes:
+  lsp_tools:

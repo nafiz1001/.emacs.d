@@ -17,16 +17,18 @@
 ;; All of them run in the `dev' container of oci/compose.dev.yaml
 ;; (see oci/DEVELOPMENT.md of the checkout).  They use
 ;; "podman-compose exec" with oci/compose.yaml, oci/compose.dev.yaml
-;; and, if it exists, oci/compose.local.yaml.  If `dev' does not run,
-;; they start it first with "podman-compose up -d --no-recreate dev".
-;; If it runs, they reuse it.
+;; and the files of `freezeman-compose-extra-files' (default
+;; compose.emacs.yaml next to this file).  If `dev' does not run, they
+;; start it first with "podman-compose up -d --no-recreate dev".  If
+;; it runs, they reuse it.
 ;;
 ;; Eglot sends host file names to the servers.  So the container must
 ;; mount the checkout at its host path: set CONTAINER_FMS_ROOT in
 ;; oci/.env to the absolute path of the checkout, then rebuild the
 ;; images.  The servers (basedpyright-langserver and
-;; typescript-language-server) must be on the PATH of `dev', for
-;; example through oci/compose.local.yaml.
+;; typescript-language-server) must be on the PATH of `dev'.
+;; compose.emacs.yaml adds them through a volume.  Its header has the
+;; command that installs them.
 ;;
 ;; The commands find the checkout as follows:
 ;; 1. If `freezeman-project-root' is set, they use it.
@@ -61,6 +63,20 @@
 If nil, the commands use the root of the current project if it is a
 Freezeman checkout."
   :type '(choice (const :tag "Current project" nil) directory))
+
+(defconst freezeman--directory
+  (let ((file (or load-file-name buffer-file-name)))
+    (file-name-directory file))
+  "Directory of this file.")
+
+;; compose.emacs.yaml is in this package and not in the checkout,
+;; because only Emacs uses the language servers that it adds.
+(defcustom freezeman-compose-extra-files
+  (list (expand-file-name "compose.emacs.yaml" freezeman--directory))
+  "Compose files after oci/compose.yaml and oci/compose.dev.yaml.
+podman-compose reads them in this order.  A relative name is relative
+to the root of the Freezeman checkout."
+  :type '(repeat file))
 
 ;; typescript-language-server looks for TypeScript only in
 ;; node_modules of the project root, but node_modules is in frontend/.
@@ -112,15 +128,14 @@ Signal a `user-error' if there is none."
 
 (defun freezeman--compose-args (root)
   "Return the \"-f FILE\" arguments of podman-compose for ROOT.
-The files are oci/compose.yaml, oci/compose.dev.yaml and, if it
-exists, oci/compose.local.yaml."
+The files are oci/compose.yaml, oci/compose.dev.yaml and the files of
+`freezeman-compose-extra-files'."
   (let* ((oci (file-name-concat root "oci"))
          (base (list (file-name-concat oci "compose.yaml")
                      (file-name-concat oci "compose.dev.yaml")))
-         (local (file-name-concat oci "compose.local.yaml"))
-         (files (if (file-exists-p local)
-                    (append base (list local))
-                  base)))
+         (extra (mapcar (lambda (file) (expand-file-name file root))
+                        freezeman-compose-extra-files))
+         (files (append base extra)))
     (mapcan (lambda (file) (list "-f" file)) files)))
 
 ;; lisp/freezeman/freezeman-tests.el tests this function.

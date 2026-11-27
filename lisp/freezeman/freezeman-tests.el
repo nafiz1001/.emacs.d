@@ -16,6 +16,10 @@
 ;; freezeman.el does not see the value.
 (defvar eglot-server-programs)
 
+;; The expected commands below have only the two files of the checkout.
+;; freezeman-tests-compose-args tests the extra files.
+(setq freezeman-compose-extra-files nil)
+
 (defconst freezeman-tests--running-dev
   "exited,com.docker.compose.service=db,\nrunning,a=1,com.docker.compose.service=dev,b=2,\n"
   "Output of podman-compose ps when `dev' runs.")
@@ -119,18 +123,26 @@ Bind `calls' to the list of (FUNCTION . ARGS) in call order, with
       (should (equal (freezeman--root) "/srv/freezeman/")))))
 
 (ert-deftest freezeman-tests-compose-args ()
-  "compose.local.yaml is added only if it exists."
-  (freezeman-tests--with-checkout t
-    (let* ((root (file-name-as-directory (expand-file-name root)))
-           (oci (file-name-concat root "oci"))
-           (base (list "-f" (file-name-concat oci "compose.yaml")
-                       "-f" (file-name-concat oci "compose.dev.yaml")))
-           (local (file-name-concat oci "compose.local.yaml")))
-      (should (equal (freezeman--compose-args root) base))
-      (make-directory oci t)
-      (with-temp-file local)
-      (should (equal (freezeman--compose-args root)
-                     (append base (list "-f" local)))))))
+  "The extra files follow the files of the checkout, in order.
+A relative extra file is relative to the root."
+  (let ((base '("-f" "/srv/freezeman/oci/compose.yaml"
+                "-f" "/srv/freezeman/oci/compose.dev.yaml")))
+    (let ((freezeman-compose-extra-files nil))
+      (should (equal (freezeman--compose-args "/srv/freezeman/") base)))
+    (let ((freezeman-compose-extra-files '("/opt/a.yaml" "oci/b.yaml")))
+      (should (equal (freezeman--compose-args "/srv/freezeman/")
+                     (append base '("-f" "/opt/a.yaml"
+                                    "-f" "/srv/freezeman/oci/b.yaml")))))))
+
+(ert-deftest freezeman-tests-compose-default-file ()
+  "The default extra file is compose.emacs.yaml of the package."
+  (let* ((standard (get 'freezeman-compose-extra-files 'standard-value))
+         (default (eval (car standard) t))
+         (library (locate-library "freezeman.el"))
+         (expected (expand-file-name "compose.emacs.yaml"
+                                     (file-name-directory library))))
+    (should (equal default (list expected)))
+    (should (file-exists-p expected))))
 
 (ert-deftest freezeman-tests-backend-command ()
   (let* ((system-type 'gnu/linux)
