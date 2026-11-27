@@ -734,12 +734,15 @@
 
 ;;; Projects
 
-;; Commands to run the Freezeman backend, frontend and shell
-;; (lisp/freezeman).
+;; Commands to run the Freezeman backend, frontend and shell, and the
+;; Eglot servers, in the dev container of the checkout (lisp/freezeman).
 (use-package freezeman
   :ensure nil
   :load-path "lisp/freezeman"
-  :commands (freezeman-backend freezeman-frontend freezeman-shell))
+  :commands (freezeman-backend freezeman-frontend freezeman-shell
+             freezeman-eglot-setup)
+  :hook ((python-base-mode js-base-mode typescript-ts-base-mode)
+         . freezeman-eglot-setup))
 
 ;;; Late Init
 
