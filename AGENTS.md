@@ -6,16 +6,23 @@ Emacs configuration (`early-init.el`, `init.el`).
 The user sometimes runs an Emacs daemon.
 - If a daemon runs, ask before you load config changes, make temporary changes or run tests in it. Tests in the daemon help diagnose issues the user sees.
 
+### Sandbox
+The Bash sandbox blocks the daemon socket and hides the processes outside the sandbox.
+- If `emacsclient` fails with `Operation not permitted`, the result is unknown. Do not read it as "no daemon".
+- Do not use `pgrep` or `ps` to find the daemon. They show only the processes in the sandbox.
+- If the result is unknown and a Terminal panel tool (`run_in_terminal`) is available, run each `emacsclient` command there. That shell runs outside the sandbox. Read the output with `read_terminal`.
+- If no Terminal panel tool is available, look for the socket file `$XDG_RUNTIME_DIR/emacs/server`. If it exists, a daemon probably runs. Give the user each `emacsclient` command. Wait for the result before you continue.
+
 ### Edit files
 Edit files with the direct file edit tools. `global-auto-revert-mode` in `init.el` reverts open buffers in the daemon after the edit. Do not revert them manually.
-- Before you edit an existing file, run `emacsclient --eval t`. If it fails, no daemon runs. Edit the file.
+- Before you edit an existing file, run `emacsclient --eval t`. If it fails with `can't find socket`, no daemon runs. Edit the file. If it fails for another reason, see Sandbox.
 - If a daemon runs, check for unsaved changes in the buffer of the file. If the result is `t`, stop and ask the user. This check does not need approval:
   `emacsclient --eval '(let ((buffer (find-buffer-visiting "/abs/path/to/file"))) (and buffer (buffer-modified-p buffer)))'`
 - After the edit, ask before you evaluate the change in the daemon.
 
 ### Refresh after git
 Run git in the shell. Shell git does not update VC, diff-hl or Magit in the daemon.
-- After a git write operation, run `emacsclient --eval t`. If it fails, no daemon runs. Do nothing more.
+- After a git write operation, run `emacsclient --eval t`. If it fails with `can't find socket`, no daemon runs. Do nothing more. If it fails for another reason, see Sandbox.
 - If a daemon runs, run `refresh.el`. Examples of write operations: `commit`, `merge`, `switch`, `stash`, `reset`, `pull`.
 - This refresh does not need approval.
 
