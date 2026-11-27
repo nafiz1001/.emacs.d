@@ -44,6 +44,9 @@
   (scroll-conservatively 101)
   (delete-by-moving-to-trash t)
   (visible-bell t)
+  ;; After a kill or bury, do not show a buffer that another window
+  ;; of the frame already shows.
+  (switch-to-prev-buffer-skip 'this)
   :config
   ;; Enable without a confirmation prompt.
   (put 'upcase-region 'disabled nil)
